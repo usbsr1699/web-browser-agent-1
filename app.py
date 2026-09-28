@@ -44,7 +44,11 @@ def event(run_id: str, kind: str, data: dict[str, Any]) -> None:
 
 
 async def screenshot(run_id: str, page: Page, message: str) -> None:
-    image = await page.screenshot(type="jpeg", quality=55, full_page=False)
+    try:
+        image = await page.screenshot(type="jpeg", quality=55, full_page=False, timeout=8000)
+    except Exception as error:
+        event(run_id, "status", {"message": f"Screenshot delayed; continuing task ({str(error)[:120]})"})
+        return
     encoded = base64.b64encode(image).decode("ascii")
     event(run_id, "screenshot", {"message": message, "screenshot": f"data:image/jpeg;base64,{encoded}"})
 
