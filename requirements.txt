@@ -1,3 +1,3 @@
-gradio>=4.0.0
-google-genai
-playwright
+fastapi==0.115.6
+httpx==0.28.1
+uvicorn[standard]==0.34.0

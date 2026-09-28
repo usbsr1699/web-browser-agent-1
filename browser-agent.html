@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1117">
+  <meta name="description" content="A mobile-friendly Gemini browser agent workspace.">
+  <title>Orbit Agent | Gemini browser workspace</title>
+  <style>
+    :root {
+      --bg: #0a0d12;
+      --panel: #11161d;
+      --panel-2: #171e27;
+      --line: #28323d;
+      --muted: #8f9bab;
+      --text: #f4f7fb;
+      --teal: #5eead4;
+      --teal-deep: #0d9488;
+      --orange: #ffb86b;
+      --rose: #ff7b8a;
+      --shadow: 0 18px 60px rgba(0, 0, 0, .35);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+    body { font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    button, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
+    .rail { border-right: 1px solid var(--line); padding: 22px 16px; display: flex; flex-direction: column; background: #0d1117; }
+    .brand { display: flex; gap: 11px; align-items: center; padding: 2px 8px 24px; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; color: #092420; background: linear-gradient(135deg, var(--teal), #a7f3d0); font-weight: 900; box-shadow: 0 8px 22px rgba(94,234,212,.22); }
+    .brand strong { display: block; letter-spacing: -.02em; font-size: 15px; }
+    .brand small { color: var(--muted); font-size: 11px; }
+    .rail-nav { display: grid; gap: 5px; }
+    .nav-item { border: 1px solid transparent; color: var(--muted); background: transparent; text-align: left; border-radius: 12px; padding: 11px 12px; display: flex; gap: 10px; align-items: center; }
+    .nav-item:hover, .nav-item.active { color: var(--text); background: var(--panel-2); border-color: var(--line); }
+    .nav-item.active { box-shadow: inset 3px 0 var(--teal); }
+    .nav-icon { width: 18px; text-align: center; color: var(--teal); font-weight: 800; }
+    .rail-spacer { flex: 1; }
+    .connection { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(94,234,212,.08), rgba(94,234,212,.02)); border-radius: 15px; padding: 13px; }
+    .connection-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 4px rgba(255,184,107,.12); }
+    .dot.ok { background: var(--teal); box-shadow: 0 0 0 4px rgba(94,234,212,.12); }
+    .connection p { color: var(--muted); margin: 8px 0 11px; font-size: 11px; }
+    .tiny-btn, .outline-btn { border: 1px solid var(--line); background: transparent; color: var(--text); border-radius: 9px; padding: 8px 10px; font-size: 12px; }
+    .tiny-btn:hover, .outline-btn:hover { border-color: var(--teal); color: var(--teal); }
+    .main { min-width: 0; display: grid; grid-template-rows: 64px minmax(0, 1fr); }
+    .topbar { border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: rgba(10,13,18,.84); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 4; }
+    .topbar-title { display: flex; align-items: center; gap: 10px; }
+    .topbar-title h1 { font-size: 15px; margin: 0; letter-spacing: -.02em; }
+    .topbar-title span { color: var(--muted); font-size: 12px; }
+    .top-actions { display: flex; gap: 9px; align-items: center; }
+    .status-pill { display: flex; align-items: center; gap: 7px; color: var(--muted); border: 1px solid var(--line); padding: 7px 10px; border-radius: 999px; font-size: 11px; }
+    .workspace { padding: 24px 28px 34px; display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(330px, .86fr); gap: 22px; min-height: 0; }
+    .chat-column, .browser-column { min-width: 0; display: flex; flex-direction: column; gap: 15px; }
+    .eyebrow { color: var(--teal); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 800; }
+    .hero { border: 1px solid var(--line); border-radius: var(--radius); background: radial-gradient(circle at 95% 0%, rgba(255,184,107,.12), transparent 34%), linear-gradient(135deg, #151d25, #11161d); padding: 22px; box-shadow: var(--shadow); }
+    .hero h2 { margin: 7px 0 7px; font-size: clamp(23px, 3vw, 33px); line-height: 1.08; letter-spacing: -.045em; max-width: 500px; }
+    .hero p { margin: 0; max-width: 590px; color: var(--muted); }
+    .hero-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
+    .stat { border: 1px solid var(--line); background: rgba(0,0,0,.15); border-radius: 10px; padding: 8px 10px; color: var(--muted); font-size: 11px; }
+    .stat b { color: var(--text); font-size: 12px; margin-right: 4px; }
+    .chat-card { min-height: 420px; flex: 1; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); display: flex; flex-direction: column; overflow: hidden; }
+    .chat-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .chat-head strong { font-size: 12px; }
+    .chat-head span { color: var(--muted); font-size: 11px; }
+    .messages { flex: 1; padding: 18px; overflow: auto; display: flex; flex-direction: column; gap: 14px; min-height: 250px; max-height: 55vh; }
+    .message { display: flex; gap: 9px; align-items: flex-start; max-width: 92%; animation: rise .25s ease-out; }
+    @keyframes rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .avatar { flex: 0 0 27px; width: 27px; height: 27px; border-radius: 9px; display: grid; place-items: center; background: var(--panel-2); color: var(--teal); font-size: 10px; font-weight: 900; border: 1px solid var(--line); }
+    .user .avatar { color: #21170d; background: var(--orange); border-color: transparent; }
+    .bubble { border: 1px solid var(--line); background: #151c24; border-radius: 5px 15px 15px 15px; padding: 10px 12px; color: #e8edf4; white-space: pre-wrap; }
+    .user .bubble { background: #203e3a; border-color: rgba(94,234,212,.18); border-radius: 15px 5px 15px 15px; }
+    .message-meta { margin-top: 6px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
+    .speaker { border: 0; background: transparent; color: var(--teal); padding: 0; font-size: 11px; }
+    .speaker:hover { color: white; }
+    .composer { padding: 13px 15px 15px; border-top: 1px solid var(--line); background: #10151b; }
+    .mode-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .mode-toggle { display: flex; gap: 4px; }
+    .mode-btn { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 8px; border-radius: 7px; font-size: 11px; }
+    .mode-btn.active { color: var(--teal); border-color: rgba(94,234,212,.2); background: rgba(94,234,212,.08); }
+    .composer-box { display: flex; align-items: flex-end; gap: 9px; border: 1px solid var(--line); border-radius: 14px; background: #0d1117; padding: 10px; }
+    .composer textarea { flex: 1; min-height: 41px; max-height: 120px; border: 0; outline: 0; resize: none; color: var(--text); background: transparent; padding: 3px 2px; }
+    .composer textarea::placeholder { color: #697585; }
+    .round-btn { border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); width: 35px; height: 35px; border-radius: 10px; display: grid; place-items: center; }
+    .round-btn:hover { color: var(--teal); border-color: var(--teal); }
+    .send-btn { background: var(--teal); color: #08211e; border: 0; font-weight: 900; }
+    .send-btn:hover { background: #99f6e4; }
+    .hint { color: #657080; font-size: 10px; margin: 8px 2px 0; }
+    .browser-card, .memory-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); overflow: hidden; }
+    .card-title { display: flex; align-items: center; justify-content: space-between; padding: 13px 15px; border-bottom: 1px solid var(--line); }
+    .card-title strong { font-size: 12px; }
+    .card-title span { color: var(--muted); font-size: 10px; }
+    .browser-toolbar { padding: 10px; display: flex; gap: 7px; background: #0d1117; border-bottom: 1px solid var(--line); }
+    .browser-toolbar input { min-width: 0; flex: 1; background: #151c24; border: 1px solid var(--line); border-radius: 9px; color: var(--text); padding: 8px 10px; outline: none; font-size: 11px; }
+    .browser-toolbar input:focus { border-color: var(--teal); }
+    .go-btn { border: 0; border-radius: 9px; background: var(--teal); color: #08211e; font-weight: 800; padding: 0 12px; }
+    .viewport { height: 310px; position: relative; background: #0a0d12; }
+    .viewport iframe, .viewport img { width: 100%; height: 100%; border: 0; background: white; display: none; object-fit: contain; }
+    .viewport.loaded iframe { display: block; }
+    .viewport-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 20%, rgba(94,234,212,.09), transparent 34%); }
+    .viewport.loaded .viewport-empty { display: none; }
+    .empty-icon { width: 45px; height: 45px; border: 1px solid rgba(94,234,212,.3); border-radius: 14px; display: grid; place-items: center; color: var(--teal); margin: 0 auto 10px; }
+    .viewport-empty strong { display: block; font-size: 13px; }
+    .viewport-empty p { color: var(--muted); font-size: 11px; max-width: 230px; margin: 5px auto 0; }
+    .browser-foot { padding: 10px 12px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--muted); }
+    .browser-foot .dot { width: 6px; height: 6px; box-shadow: none; }
+    .log { padding: 10px 14px 13px; max-height: 150px; overflow: auto; display: grid; gap: 7px; }
+    .log-line { display: flex; gap: 7px; color: var(--muted); font-size: 10px; }
+    .log-line b { color: var(--teal); font-weight: 600; white-space: nowrap; }
+    .memory-card { padding-bottom: 13px; }
+    .memory-list { padding: 10px 14px 0; display: grid; gap: 8px; }
+    .memory-item { padding: 9px 10px; border-radius: 10px; background: #151c24; border: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .memory-item b { color: var(--text); display: block; margin-bottom: 2px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+    .mobile-only { display: none; }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 18px; background: rgba(4,6,9,.72); backdrop-filter: blur(10px); }
+    .modal-backdrop.hidden { display: none; }
+    .modal { width: min(460px, 100%); border: 1px solid var(--line); border-radius: 20px; background: #111820; padding: 23px; box-shadow: 0 25px 90px rgba(0,0,0,.55); }
+    .modal h3 { margin: 8px 0 7px; font-size: 22px; letter-spacing: -.04em; }
+    .modal p { color: var(--muted); font-size: 12px; margin: 0 0 17px; }
+    .field { display: grid; gap: 7px; margin: 13px 0; }
+    .field label { font-size: 11px; color: var(--muted); }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #0d1117; color: var(--text); padding: 11px 12px; outline: none; }
+    .field input:focus { border-color: var(--teal); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
+    .primary-btn { border: 0; background: var(--teal); color: #08211e; border-radius: 10px; padding: 10px 14px; font-weight: 900; }
+    .primary-btn:hover { background: #99f6e4; }
+    .modal-note { border-left: 2px solid var(--orange); padding-left: 9px; color: #b7bfca; font-size: 11px; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; z-index: 30; border: 1px solid var(--line); background: #17202a; color: var(--text); border-radius: 999px; padding: 9px 13px; font-size: 11px; transition: .2s ease; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 70px minmax(0, 1fr); }
+      .rail { padding: 16px 10px; align-items: center; }
+      .brand { padding: 2px 0 24px; }
+      .brand > div:last-child, .nav-item span:not(.nav-icon), .connection { display: none; }
+      .nav-item { width: 44px; justify-content: center; padding: 11px 0; }
+      .rail-nav { justify-items: center; }
+      .workspace { grid-template-columns: 1fr; }
+      .browser-column { display: grid; grid-template-columns: 1fr 1fr; align-items: start; }
+      .browser-card { grid-row: span 2; }
+    }
+    @media (max-width: 680px) {
+      .app { display: block; }
+      .rail { display: none; }
+      .main { display: block; }
+      .topbar { height: 57px; padding: 0 15px; }
+      .mobile-only { display: block; }
+      .topbar-title span { display: none; }
+      .status-pill { padding: 6px 8px; }
+      .workspace { display: flex; flex-direction: column; padding: 14px 12px 24px; gap: 12px; }
+      .hero { padding: 18px; }
+      .hero h2 { font-size: 25px; }
+      .chat-card { min-height: 490px; }
+      .messages { max-height: none; min-height: 310px; padding: 14px; }
+      .message { max-width: 96%; }
+      .browser-column { display: flex; }
+      .viewport { height: 260px; }
+      .memory-card { order: 3; }
+      .top-actions .outline-btn { display: none; }
+      .modal { width: min(354px, calc(100% - 24px)); max-height: calc(100vh - 28px); overflow: auto; }
+      .modal-actions { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="rail">
+      <div class="brand"><div class="brand-mark">O</div><div><strong>Orbit Agent</strong><small>Gemini browser workspace</small></div></div>
+      <nav class="rail-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-nav="chat"><span class="nav-icon">+</span><span>New conversation</span></button>
+        <button class="nav-item" data-nav="memory"><span class="nav-icon">M</span><span>Memory vault</span></button>
+        <button class="nav-item" data-nav="browser"><span class="nav-icon">B</span><span>Browser stream</span></button>
+      </nav>
+      <div class="rail-spacer"></div>
+      <div class="connection"><div class="connection-row"><i class="dot" id="connectionDot"></i><span id="connectionText">Gemini not connected</span></div><p>Your key stays in this browser only.</p><button class="tiny-btn" id="setupButton">Open setup</button></div>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-title"><button class="outline-btn mobile-only" id="mobileSetup">Setup</button><div><h1>Agent cockpit</h1><span>Reason, search, and explore from one place</span></div></div>
+        <div class="top-actions"><div class="status-pill"><i class="dot" id="liveDot"></i><span id="liveStatus">Ready</span></div><button class="outline-btn" id="clearButton">Clear chat</button></div>
+      </header>
+      <section class="workspace">
+        <section class="chat-column">
+          <div class="hero"><div class="eyebrow">Personal web copilot</div><h2>Turn a question into a useful next step.</h2><p>Ask Orbit to reason with Gemini, search the live web, remember what matters, and work through a browser task with you.</p><div class="hero-stats"><div class="stat"><b id="messageCount">0</b> messages</div><div class="stat"><b id="memoryCount">0</b> saved memories</div><div class="stat"><b>Gemini 3.5</b> flash</div></div></div>
+          <div class="chat-card" id="chatCard">
+            <div class="chat-head"><div><strong>Conversation</strong><br><span id="conversationLabel">New session</span></div><span id="modelLabel">gemini-3.5-flash</span></div>
+            <div class="messages" id="messages"></div>
+            <div class="composer"><div class="mode-row"><div class="mode-toggle"><button class="mode-btn active" data-mode="chat">Chat</button><button class="mode-btn" data-mode="search">Web search</button><button class="mode-btn" data-mode="browser">Browser task</button></div><button class="round-btn" id="attachButton" aria-label="Attach image">+</button><input type="file" id="imageInput" accept="image/*" hidden></div><div class="composer-box"><textarea id="prompt" rows="1" placeholder="Ask anything, or tell Orbit what to do..."></textarea><button class="round-btn send-btn" id="sendButton" aria-label="Send">></button></div><div class="hint">Enter to send · Shift + Enter for a new line · image vision supported</div></div>
+          </div>
+        </section>
+        <section class="browser-column" id="browserSection">
+          <div class="browser-card">
+            <div class="card-title"><div><strong>Live browser stream</strong><br><span>Watch the agent's active viewport</span></div><span class="status-pill"><i class="dot ok"></i> Live</span></div>
+            <div class="browser-toolbar"><input id="address" value="https://example.com" aria-label="Browser address"><button class="go-btn" id="goButton">Go</button></div>
+            <div class="viewport" id="viewport"><div class="viewport-empty"><div><div class="empty-icon">[]</div><strong>Viewport ready</strong><p>Ask for a browser task or enter a URL above to open a live page.</p></div></div><iframe id="browserFrame" title="Live browser viewport" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe><img id="browserShot" alt="Live remote browser screenshot"></div>
+            <div class="browser-foot"><i class="dot ok"></i><span id="browserStatus">Waiting for a browser task</span></div>
+            <div class="log" id="actionLog"><div class="log-line"><b>system</b><span>Browser stream initialized</span></div></div>
+          </div>
+          <div class="memory-card" id="memorySection"><div class="card-title"><div><strong>Memory vault</strong><br><span>Private to this browser</span></div><button class="tiny-btn" id="forgetButton">Forget all</button></div><div class="memory-list" id="memoryList"></div></div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <div class="modal-backdrop hidden" id="setupModal"><div class="modal"><div class="eyebrow">One-time setup</div><h3>Connect your agent.</h3><p>Gemini powers chat, vision, and search. A Browser Use key enables a real remote browser that can navigate sites and complete tasks for you.</p><div class="field"><label for="apiKey">Gemini API key</label><input id="apiKey" type="password" placeholder="AIza..." autocomplete="off"></div><div class="field"><label for="browserKey">Browser Use API key <span style="color:var(--teal)">(for real browser tasks)</span></label><input id="browserKey" type="password" placeholder="bu_..." autocomplete="off"></div><div class="field"><label for="modelInput">Model</label><input id="modelInput" value="gemini-3.5-flash" autocomplete="off"></div><div class="modal-note">Keys stay in this device's browser storage and are sent directly to their providers. Orbit will not submit forms, send messages, make purchases, or take irreversible actions unless you explicitly request it.</div><div class="modal-actions"><button class="outline-btn" id="cancelSetup">Not now</button><button class="primary-btn" id="saveSetup">Save and connect</button></div></div></div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const MODEL_DEFAULT = 'gemini-3.5-flash';
+    const STORE = {
+      key: 'orbit-gemini-key',
+      browserKey: 'orbit-browser-use-key',
+      browserSession: 'orbit-browser-session',
+      model: 'orbit-gemini-model',
+      messages: 'orbit-chat-history',
+      memories: 'orbit-memory-vault',
+      address: 'orbit-browser-address'
+    };
+    const state = {
+      mode: 'chat',
+      image: null,
+      imageName: '',
+      messages: readJson(STORE.messages, []),
+      memories: readJson(STORE.memories, []),
+      model: localStorage.getItem(STORE.model) || MODEL_DEFAULT,
+      browserSessionId: localStorage.getItem(STORE.browserSession) || '',
+      busy: false
+    };
+    const $ = (id) => document.getElementById(id);
+
+    function readJson(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); }
+      catch (_) { return fallback; }
+    }
+    function saveJson(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
+    }
+    function linkify(text) {
+      return escapeHtml(text).replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noreferrer" style="color:var(--teal)">$1</a>');
+    }
+    function showToast(text) {
+      const toast = $('toast'); toast.textContent = text; toast.classList.add('show');
+      clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 2800);
+    }
+    function apiKey() { return localStorage.getItem(STORE.key) || ''; }
+    function browserKey() { return localStorage.getItem(STORE.browserKey) || ''; }
+    function setConnection(connected) {
+      $('connectionDot').classList.toggle('ok', connected);
+      const browserConnected = Boolean(browserKey());
+      $('connectionText').textContent = connected && browserConnected ? 'Gemini + Browser connected' : connected ? 'Gemini connected' : browserConnected ? 'Browser connected' : 'Gemini not connected';
+    }
+    function renderStats() {
+      $('messageCount').textContent = state.messages.filter((item) => item.role === 'user').length;
+      $('memoryCount').textContent = state.memories.length;
+      $('modelLabel').textContent = state.model;
+    }
+    function renderMemories() {
+      const list = $('memoryList');
+      if (!state.memories.length) {
+        list.innerHTML = '<div class="memory-item"><b>Nothing saved yet</b>Preferences and useful context you approve will appear here.</div>';
+      } else {
+        list.innerHTML = state.memories.slice(-5).reverse().map((item) => `<div class="memory-item"><b>${escapeHtml(item.label || 'Context')}</b>${escapeHtml(item.text)}</div>`).join('');
+      }
+      renderStats();
+    }
+    function renderMessage(message) {
+      const row = document.createElement('div'); row.className = `message ${message.role === 'user' ? 'user' : 'assistant'}`;
+      const speaker = message.role === 'assistant' ? `<div class="message-meta"><span>${message.time || 'now'}</span><button class="speaker" data-speak="${escapeHtml(message.text)}" aria-label="Read response aloud">[ speaker ]</button></div>` : `<div class="message-meta"><span>${message.time || 'now'}</span></div>`;
+      row.innerHTML = `<div class="avatar">${message.role === 'user' ? 'YOU' : 'O'}</div><div><div class="bubble">${linkify(message.text)}</div>${speaker}</div>`;
+      $('messages').appendChild(row);
+    }
+    function renderMessages() {
+      const box = $('messages'); box.innerHTML = '';
+      if (!state.messages.length) {
+        const welcome = { role: 'assistant', text: 'I am ready. Connect a Gemini key, then ask me to research a topic, plan a browser task, or remember a preference.', time: 'now' };
+        renderMessage(welcome);
+      } else state.messages.forEach(renderMessage);
+      box.scrollTop = box.scrollHeight; renderStats();
+    }
+    function pushMessage(role, text) {
+      const message = { role, text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
+      state.messages.push(message); state.messages = state.messages.slice(-60); saveJson(STORE.messages, state.messages); renderMessages();
+    }
+    function setBusy(isBusy, status) {
+      state.busy = isBusy; $('sendButton').disabled = isBusy; $('liveStatus').textContent = status || (isBusy ? 'Thinking' : 'Ready');
+      $('liveDot').classList.toggle('ok', !isBusy); $('sendButton').textContent = isBusy ? '...' : '>';
+    }
+    function openSetup() {
+      $('apiKey').value = apiKey(); $('browserKey').value = browserKey(); $('modelInput').value = state.model; $('setupModal').classList.remove('hidden');
+      setTimeout(() => $('apiKey').focus(), 50);
+    }
+    function closeSetup() { $('setupModal').classList.add('hidden'); }
+    function setMode(mode) {
+      state.mode = mode;
+      document.querySelectorAll('.mode-btn').forEach((button) => button.classList.toggle('active', button.dataset.mode === mode));
+      const labels = { chat: 'Ask Orbit anything...', search: 'Search the live web for...', browser: 'Tell Orbit what to do in a browser...' };
+      $('prompt').placeholder = labels[mode];
+    }
+    function logAction(label, detail) {
+      const line = document.createElement('div'); line.className = 'log-line'; line.innerHTML = `<b>${escapeHtml(label)}</b><span>${escapeHtml(detail)}</span>`;
+      $('actionLog').appendChild(line); $('actionLog').scrollTop = $('actionLog').scrollHeight;
+    }
+    function safeUrl(value) {
+      try {
+        const url = new URL(value.startsWith('http') ? value : `https://${value}`);
+        return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+      } catch (_) { return ''; }
+    }
+    function openBrowser(value, source = 'manual') {
+      const url = safeUrl(value);
+      if (!url) { showToast('Enter a valid http or https address'); return false; }
+      $('address').value = url; localStorage.setItem(STORE.address, url); $('browserFrame').src = url; $('browserFrame').style.display = 'block'; $('browserShot').style.display = 'none'; $('viewport').classList.add('loaded');
+      $('browserStatus').textContent = `Viewing ${new URL(url).hostname}`; logAction(source, `Opening ${url}`); return true;
+    }
+    function browserAction(type, data) {
+      if (type === 'navigate' && data.url) return openBrowser(data.url, 'agent');
+      const frame = $('browserFrame');
+      try {
+        const doc = frame.contentDocument;
+        if (!doc) throw new Error('not accessible');
+        if (type === 'click') {
+          const target = [...doc.querySelectorAll('button,a,input,[role="button"]')].find((el) => (el.innerText || el.getAttribute('aria-label') || el.value || '').toLowerCase().includes(String(data.target || '').toLowerCase()));
+          if (target) { target.click(); logAction('agent', `Clicked ${data.target}`); return true; }
+        }
+        if (type === 'type') {
+          const input = doc.querySelector(data.selector || 'input,textarea');
+          if (input) { input.focus(); input.value = data.text || ''; input.dispatchEvent(new Event('input', { bubbles: true })); logAction('agent', `Filled ${data.selector || 'field'}`); return true; }
+        }
+        if (type === 'wait') { logAction('agent', `Waiting ${data.ms || 1000} ms`); return true; }
+      } catch (_) { logAction('agent', `${type} queued (site access is cross-origin)`); return false; }
+      logAction('agent', `${type} target not found in current viewport`); return false;
+    }
+    function extractJson(text) {
+      try { return JSON.parse(text); } catch (_) {}
+      const fenced = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+      if (fenced) { try { return JSON.parse(fenced[1]); } catch (_) {} }
+      const object = text.match(/\{[\s\S]*\}/);
+      if (object) { try { return JSON.parse(object[0]); } catch (_) {} }
+      return null;
+    }
+    function addMemory(label, text) {
+      if (!text || text.length < 3) return;
+      const normalized = text.trim();
+      if (state.memories.some((item) => item.text.toLowerCase() === normalized.toLowerCase())) return;
+      state.memories.push({ label: label || 'Context', text: normalized, time: Date.now() }); state.memories = state.memories.slice(-20); saveJson(STORE.memories, state.memories); renderMemories();
+    }
+    function buildPrompt(message) {
+      const browserRules = state.mode === 'browser' ? 'Create browser actions when useful. Allowed action format: {"type":"navigate","url":"https://..."}, {"type":"click","target":"visible text"}, {"type":"type","selector":"input","text":"..."}, or {"type":"wait","ms":1000}. Use only safe public browsing actions and never claim an action succeeded unless it is in the action list.' : 'Use an empty actions array unless a browser action is explicitly requested.';
+      const searchRules = state.mode === 'search' ? 'Use Google Search grounding for current facts and put the most useful source URLs in sources.' : 'Use search grounding only when the user asks for current or web-based information.';
+      return `You are Orbit, a careful personal browser agent inside an app that is already built and deployed. Never tell the user to build, deploy, or host this app themselves. Treat requests like "do it for me" as instructions to operate this existing workspace. ${browserRules} ${searchRules}
+Return only valid JSON with this exact shape: {"answer":"short helpful answer with no markdown fences","actions":[],"memories":[],"sources":[]}. memories is an array of objects with label and text. Save only durable preferences or user-provided facts, not secrets. sources is an array of objects with title and url. Never invent URLs. Be honest about limitations. User request: ${message}`;
+    }
+    async function callGemini(message) {
+      const key = apiKey();
+      if (!key) throw new Error('Connect your Gemini API key in Setup first.');
+      const history = state.messages.slice(-12).map((item) => ({ role: item.role === 'assistant' ? 'model' : 'user', parts: [{ text: item.text }] }));
+      const userParts = [{ text: buildPrompt(message) }];
+      if (state.image) userParts.push({ inline_data: { mime_type: state.image.mimeType, data: state.image.data } });
+      const body = {
+        systemInstruction: { parts: [{ text: 'You are Orbit Agent inside an already deployed browser workspace. Respond with JSON only. Never refuse by saying the app must be built or deployed by the user. Prioritize accuracy, user safety, and concise steps.' }] },
+        contents: [...history, { role: 'user', parts: userParts }],
+        generationConfig: { temperature: 0.35, maxOutputTokens: 1600 }
+      };
+      if (state.mode === 'search' || /\b(search|latest|today|current|news|price|weather)\b/i.test(message)) body.tools = [{ google_search: {} }];
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(state.model)}:generateContent?key=${encodeURIComponent(key)}`;
+      const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error?.message || `Gemini request failed (${response.status})`);
+      const raw = data.candidates?.[0]?.content?.parts?.map((part) => part.text || '').join('') || '';
+      if (!raw) throw new Error('Gemini returned an empty response.');
+      const parsed = extractJson(raw) || { answer: raw, actions: [], memories: [], sources: [] };
+      parsed.answer = parsed.answer || raw; parsed.actions = Array.isArray(parsed.actions) ? parsed.actions : []; parsed.memories = Array.isArray(parsed.memories) ? parsed.memories : []; parsed.sources = Array.isArray(parsed.sources) ? parsed.sources : [];
+      const grounding = data.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+      grounding.forEach((chunk) => { const web = chunk.web; if (web?.uri && !parsed.sources.some((source) => source.url === web.uri)) parsed.sources.push({ title: web.title || web.uri, url: web.uri }); });
+      return parsed;
+    }
+    function previewRemoteData(data) {
+      if (!data || typeof data !== 'object') return;
+      const possible = [data.screenshot, data.screenshotUrl, data.image, data.imageUrl, data.screenshot_url].find((value) => typeof value === 'string' && value.length > 20);
+      if (!possible) return;
+      const source = possible.startsWith('data:') ? possible : possible;
+      $('browserShot').src = source; $('browserShot').style.display = 'block'; $('browserFrame').style.display = 'none'; $('viewport').classList.add('loaded'); $('browserStatus').textContent = 'Receiving live remote browser frames';
+    }
+    function eventDetail(event) {
+      const data = event.data || {};
+      if (typeof data === 'string') return data;
+      return data.message || data.text || data.description || data.action || data.url || event.type || 'Browser event received';
+    }
+    async function pollRemoteRun(runId) {
+      const key = browserKey(); const direct = location.hostname.endsWith('.pages.bu.app'); const base = direct ? `https://api.browser-use.com/api/v4/runs/${runId}` : `/api/browser/${runId}`; const query = direct ? '' : `?key=${encodeURIComponent(key)}`; const headers = direct ? { 'X-Browser-Use-API-Key': key } : {}; let after = 0; const deadline = Date.now() + 240000;
+      while (Date.now() < deadline) {
+        const statusResponse = await fetch(`${base}/status${query}`, { headers });
+        const status = await statusResponse.json();
+        const eventResponse = await fetch(`${base}/events${direct ? '?' : '&'}limit=100&after=${after}&include_output=false${direct ? '' : `&key=${encodeURIComponent(key)}`}`, { headers });
+        if (eventResponse.ok) {
+          const eventData = await eventResponse.json();
+          (eventData.events || []).forEach((event) => { after = Math.max(after, Number(event.id) || after); logAction('remote', eventDetail(event)); previewRemoteData(event.data); });
+        }
+        if (['completed', 'failed', 'cancelled'].includes(status.status)) {
+          const resultResponse = await fetch(`${base}${query}`, { headers });
+          const result = await resultResponse.json();
+          if (status.status !== 'completed') throw new Error(result.error || `Remote browser run ${status.status}.`);
+          const answer = typeof result.result === 'string' && result.result ? result.result : result.output ? JSON.stringify(result.output, null, 2) : 'The remote browser completed the task.';
+          return { answer };
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1600));
+      }
+      throw new Error('The remote browser took too long to respond. You can try the task again.');
+    }
+    async function runRemoteBrowser(task) {
+      const key = browserKey(); if (!key) throw new Error('Add a Browser Use API key in Setup to control a real remote browser.');
+      const firstRun = !state.browserSessionId;
+      const requestBody = {
+        task: `Operate a real browser for the user. Complete this request: ${task}. You may navigate, click, type, scroll, and inspect pages. Do not submit forms, send messages, purchase anything, delete data, or take other irreversible actions unless the user's request explicitly asks for that exact action. Report what you actually did.`,
+        model: state.model,
+        sessionId: state.browserSessionId || null,
+        maxCostUsd: 0.75
+      };
+      if (firstRun) requestBody.browserSettings = { record: true, screenWidth: 1280, screenHeight: 900 };
+      const direct = location.hostname.endsWith('.pages.bu.app');
+      const response = await fetch(direct ? 'https://api.browser-use.com/api/v4/runs' : '/api/browser/run', { method: 'POST', headers: direct ? { 'X-Browser-Use-API-Key': key, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' }, body: JSON.stringify(direct ? requestBody : { key, task: requestBody.task, model: requestBody.model, sessionId: requestBody.sessionId }) });
+      const data = await response.json(); if (!response.ok) throw new Error(data.detail || data.error || `Browser Use rejected the task (${response.status}).`);
+      state.browserSessionId = data.sessionId || state.browserSessionId; if (state.browserSessionId) localStorage.setItem(STORE.browserSession, state.browserSessionId);
+      $('browserStatus').textContent = 'Remote browser is working'; logAction('remote', `Started real browser run ${data.id.slice(0, 8)}`); return pollRemoteRun(data.id);
+    }
+    async function sendMessage() {
+      const input = $('prompt'); const text = input.value.trim();
+      if (!text || state.busy) return;
+      if (state.mode === 'browser' ? !browserKey() && !apiKey() : !apiKey()) { openSetup(); showToast(state.mode === 'browser' ? 'Add a Gemini or Browser Use key to start' : 'Add a Gemini key to start chatting'); return; }
+      input.value = ''; input.style.height = 'auto'; pushMessage('user', text); setBusy(true, state.mode === 'browser' ? 'Planning browser task' : state.mode === 'search' ? 'Searching the web' : 'Thinking');
+      logAction('agent', `Working on: ${text.slice(0, 70)}${text.length > 70 ? '...' : ''}`);
+      try {
+        const result = state.mode === 'browser' && browserKey() ? await runRemoteBrowser(text) : await callGemini(text);
+        pushMessage('assistant', result.answer);
+        result.memories.forEach((memory) => addMemory(memory.label, memory.text));
+        result.sources.slice(0, 5).forEach((source) => logAction('source', source.title || source.url));
+        for (const action of result.actions.slice(0, 8)) { if (action && action.type) browserAction(action.type, action); }
+        state.image = null; state.imageName = '';
+        if (result.actions.length) $('browserStatus').textContent = `${result.actions.length} browser step${result.actions.length === 1 ? '' : 's'} planned`;
+      } catch (error) {
+        pushMessage('assistant', `I could not complete that request. ${error.message}`); logAction('error', error.message); showToast(error.message.slice(0, 110));
+      } finally { setBusy(false, 'Ready'); }
+    }
+    function speak(text) {
+      if (!('speechSynthesis' in window)) { showToast('Text-to-speech is not available here'); return; }
+      window.speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.rate = .98; utterance.pitch = 1; window.speechSynthesis.speak(utterance);
+    }
+    function attachImage(file) {
+      if (!file) return;
+      const reader = new FileReader(); reader.onload = () => { const [meta, data] = String(reader.result).split(','); state.image = { mimeType: meta.match(/data:(.*);base64/)?.[1] || file.type, data }; state.imageName = file.name; showToast(`Attached ${file.name}`); $('attachButton').textContent = '1'; }; reader.readAsDataURL(file);
+    }
+    function focusSection(name) {
+      const target = name === 'memory' ? $('memorySection') : name === 'browser' ? $('browserSection') : $('chatCard');
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.nav === name));
+    }
+    $('setupButton').addEventListener('click', openSetup); $('mobileSetup').addEventListener('click', openSetup); $('cancelSetup').addEventListener('click', closeSetup);
+    $('saveSetup').addEventListener('click', () => { const key = $('apiKey').value.trim(); const browserApiKey = $('browserKey').value.trim(); const model = $('modelInput').value.trim() || MODEL_DEFAULT; if (!key && !browserApiKey) { showToast('Add at least one API key first'); return; } if (key) localStorage.setItem(STORE.key, key); else localStorage.removeItem(STORE.key); if (browserApiKey) localStorage.setItem(STORE.browserKey, browserApiKey); else localStorage.removeItem(STORE.browserKey); localStorage.setItem(STORE.model, model); state.model = model; setConnection(Boolean(key)); renderStats(); closeSetup(); showToast(browserApiKey ? 'Remote browser connected on this device' : 'Gemini connected on this device'); });
+    $('setupModal').addEventListener('click', (event) => { if (event.target === $('setupModal')) closeSetup(); });
+    $('sendButton').addEventListener('click', sendMessage); $('attachButton').addEventListener('click', () => $('imageInput').click()); $('imageInput').addEventListener('change', (event) => attachImage(event.target.files[0]));
+    $('prompt').addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
+    $('prompt').addEventListener('input', (event) => { event.target.style.height = 'auto'; event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`; });
+    document.querySelectorAll('.mode-btn').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
+    document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => focusSection(button.dataset.nav)));
+    $('goButton').addEventListener('click', () => openBrowser($('address').value)); $('address').addEventListener('keydown', (event) => { if (event.key === 'Enter') openBrowser(event.target.value); });
+    $('clearButton').addEventListener('click', () => { state.messages = []; saveJson(STORE.messages, state.messages); renderMessages(); showToast('Conversation cleared'); });
+    $('forgetButton').addEventListener('click', () => { if (!state.memories.length || confirm('Forget all saved memories on this device?')) { state.memories = []; saveJson(STORE.memories, state.memories); renderMemories(); showToast('Memory vault cleared'); } });
+    $('messages').addEventListener('click', (event) => { const button = event.target.closest('[data-speak]'); if (button) speak(button.dataset.speak); });
+    const savedAddress = localStorage.getItem(STORE.address); if (savedAddress) $('address').value = savedAddress;
+    setConnection(Boolean(apiKey())); renderMessages(); renderMemories(); setMode('chat');
+    if (!apiKey() && !browserKey()) setTimeout(openSetup, 650);
+  </script>
+</body>
+</html>
