@@ -107,6 +107,20 @@
     .viewport-empty p { color: var(--muted); font-size: 11px; max-width: 230px; margin: 5px auto 0; }
     .browser-foot { padding: 10px 12px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--muted); }
     .browser-foot .dot { width: 6px; height: 6px; box-shadow: none; }
+    .browser-foot .tiny-btn { margin-left: auto; padding: 6px 9px; }
+    .viewport img { cursor: crosshair; }
+    .remote-controls { padding: 10px 12px 12px; border-top: 1px solid var(--line); background: linear-gradient(180deg, rgba(94,234,212,.06), rgba(94,234,212,.02)); }
+    .remote-controls[hidden] { display: none; }
+    .remote-control-label { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 10px; margin-bottom: 7px; }
+    .remote-control-label b { color: var(--teal); }
+    .remote-control-row { display: flex; gap: 6px; }
+    .remote-control-row input { min-width: 0; flex: 1; background: #0d1117; color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; outline: none; font-size: 11px; }
+    .remote-control-row input:focus { border-color: var(--teal); }
+    .remote-control-row button { border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 9px; padding: 0 10px; font-size: 11px; }
+    .remote-control-row button:hover { color: var(--teal); border-color: var(--teal); }
+    .remote-control-row .primary { background: var(--teal); color: #08211e; border-color: transparent; font-weight: 800; }
+    .handoff { border-color: rgba(255,184,107,.4); background: linear-gradient(135deg, #171d24, #1b1916); }
+    .handoff-badge { display: inline-flex; gap: 7px; align-items: center; color: var(--orange); font-size: 11px; font-weight: 800; }
     .log { padding: 10px 14px 13px; max-height: 150px; overflow: auto; display: grid; gap: 7px; }
     .log-line { display: flex; gap: 7px; color: var(--muted); font-size: 10px; }
     .log-line b { color: var(--teal); font-weight: 600; white-space: nowrap; }
@@ -183,7 +197,7 @@
       </header>
       <section class="workspace">
         <section class="chat-column">
-          <div class="hero"><div class="eyebrow">Personal web copilot</div><h2>Turn a question into a useful next step.</h2><p>Ask Orbit to reason with Gemini, search the live web, remember what matters, and work through a browser task with you.</p><div class="hero-stats"><div class="stat"><b id="messageCount">0</b> messages</div><div class="stat"><b id="memoryCount">0</b> saved memories</div><div class="stat"><b>Gemini 3.5</b> flash</div></div></div>
+          <div class="hero"><div class="eyebrow">Personal web copilot</div><h2>Tell Orbit the outcome. It handles the steps.</h2><p>Orbit reads the page, chooses the next move, checks the result, and pauses only when your private input or approval is needed.</p><div class="hero-stats"><div class="stat"><b id="messageCount">0</b> messages</div><div class="stat"><b id="memoryCount">0</b> saved memories</div><div class="stat"><b>observe</b> + act loop</div></div></div>
           <div class="chat-card" id="chatCard">
             <div class="chat-head"><div><strong>Conversation</strong><br><span id="conversationLabel">New session</span></div><span id="modelLabel">gemini-3.5-flash</span></div>
             <div class="messages" id="messages"></div>
@@ -192,10 +206,11 @@
         </section>
         <section class="browser-column" id="browserSection">
           <div class="browser-card">
-            <div class="card-title"><div><strong>Live browser stream</strong><br><span>Watch the agent's active viewport</span></div><span class="status-pill"><i class="dot ok"></i> Live</span></div>
+            <div class="card-title"><div><strong>Remote browser</strong><br><span>Orbit's live viewport · take control when needed</span></div><span class="status-pill"><i class="dot ok"></i> Live</span></div>
             <div class="browser-toolbar"><input id="address" value="https://example.com" aria-label="Browser address"><button class="go-btn" id="goButton">Go</button></div>
             <div class="viewport" id="viewport"><div class="viewport-empty"><div><div class="empty-icon">[]</div><strong>Viewport ready</strong><p>Ask for a browser task or enter a URL above to open a live page.</p></div></div><iframe id="browserFrame" title="Live browser viewport" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe><img id="browserShot" alt="Live remote browser screenshot"></div>
-            <div class="browser-foot"><i class="dot ok"></i><span id="browserStatus">Waiting for a browser task</span></div>
+            <div class="browser-foot"><i class="dot ok"></i><span id="browserStatus">Waiting for a browser task</span><button class="tiny-btn" id="takeControlButton" hidden>Take control</button></div>
+            <div class="remote-controls" id="remoteControls" hidden><div class="remote-control-label"><span><b>Remote control on</b> · tap the viewport to click</span><span>private session</span></div><div class="remote-control-row"><input id="remoteText" type="text" placeholder="Type into the active field..."><button class="primary" id="remoteType">Type</button><button id="remoteEnter">Enter</button><button id="releaseControl">Release</button></div></div>
             <div class="log" id="actionLog"><div class="log-line"><b>system</b><span>Browser stream initialized</span></div></div>
           </div>
           <div class="memory-card" id="memorySection"><div class="card-title"><div><strong>Memory vault</strong><br><span>Private to this browser</span></div><button class="tiny-btn" id="forgetButton">Forget all</button></div><div class="memory-list" id="memoryList"></div></div>
@@ -204,6 +219,7 @@
     </main>
   </div>
   <div class="modal-backdrop hidden" id="setupModal"><div class="modal"><div class="eyebrow">One-time setup</div><h3>Connect your free agent.</h3><p>One Gemini API key powers chat, vision, web search, and the remote Playwright browser. This free-tier version does not use Browser Use billing.</p><div class="field"><label for="apiKey">Gemini API key</label><input id="apiKey" type="password" placeholder="AIza..." autocomplete="off"></div><div class="field"><label for="modelInput">Model</label><input id="modelInput" value="gemini-3.5-flash" autocomplete="off"></div><div class="modal-note">Your key is stored only in this device's browser storage and sent over HTTPS to the app. Orbit will not submit forms, send messages, make purchases, or take irreversible actions unless you explicitly request it.</div><div class="modal-actions"><button class="outline-btn" id="cancelSetup">Not now</button><button class="primary-btn" id="saveSetup">Save and connect</button></div></div></div>
+  <div class="modal-backdrop hidden" id="handoffModal"><div class="modal handoff"><div class="handoff-badge">! USER INPUT NEEDED</div><h3 id="handoffTitle">Sign in on the remote browser.</h3><p id="handoffMessage">Orbit paused because this step needs your private input. Nothing is submitted until you continue.</p><div class="modal-note">Tap <b>Take control</b>, then tap fields in the live browser and type through the private control bar. Your password and one-time codes are never sent to Gemini.</div><div class="modal-actions"><button class="outline-btn" id="cancelHandoff">Stop task</button><button class="outline-btn" id="takeControlModal">Take control</button><button class="primary-btn" id="continueTask">Continue task</button></div></div></div>
   <div class="toast" id="toast"></div>
   <script>
     const MODEL_DEFAULT = 'gemini-3.5-flash';
@@ -223,6 +239,11 @@
       memories: readJson(STORE.memories, []),
       model: localStorage.getItem(STORE.model) || MODEL_DEFAULT,
       browserSessionId: localStorage.getItem(STORE.browserSession) || '',
+      controlActive: false,
+      waitingRun: null,
+      waitingKind: 'login_required',
+      waitingMessage: '',
+      resumeWaiter: null,
       busy: false
     };
     const $ = (id) => document.getElementById(id);
@@ -304,11 +325,29 @@
         return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
       } catch (_) { return ''; }
     }
-    function openBrowser(value, source = 'manual') {
+    function setControl(active) {
+      state.controlActive = active; $('remoteControls').hidden = !active; $('takeControlButton').hidden = !state.browserSessionId; $('takeControlButton').textContent = active ? 'Release control' : 'Take control';
+      if (active) $('remoteText').focus();
+    }
+    async function ensureRemoteSession() {
+      if (state.browserSessionId) return state.browserSessionId;
+      const response = await fetch('/api/browser/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey() }) });
+      const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Could not start the remote browser.');
+      state.browserSessionId = data.sessionId; localStorage.setItem(STORE.browserSession, state.browserSessionId); previewRemoteData(data); setControl(false); return state.browserSessionId;
+    }
+    async function sendRemoteInput(type, values = {}) {
+      let sessionId = await ensureRemoteSession();
+      let response = await fetch(`/api/browser/${sessionId}/input`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), type, ...values }) });
+      if (response.status === 403) { localStorage.removeItem(STORE.browserSession); state.browserSessionId = ''; sessionId = await ensureRemoteSession(); response = await fetch(`/api/browser/${sessionId}/input`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), type, ...values }) }); }
+      const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Remote browser input failed.');
+      previewRemoteData(data); return data;
+    }
+    async function openBrowser(value, source = 'manual') {
       const url = safeUrl(value);
       if (!url) { showToast('Enter a valid http or https address'); return false; }
-      $('address').value = url; localStorage.setItem(STORE.address, url); $('browserFrame').src = url; $('browserFrame').style.display = 'block'; $('browserShot').style.display = 'none'; $('viewport').classList.add('loaded');
-      $('browserStatus').textContent = `Viewing ${new URL(url).hostname}`; logAction(source, `Opening ${url}`); return true;
+      if (!apiKey()) { openSetup(); return false; }
+      try { await sendRemoteInput('navigate', { url }); $('address').value = url; localStorage.setItem(STORE.address, url); $('browserStatus').textContent = `Viewing ${new URL(url).hostname}`; logAction(source, `Opening ${url}`); return true; }
+      catch (error) { showToast(error.message); logAction('error', error.message); return false; }
     }
     function browserAction(type, data) {
       if (type === 'navigate' && data.url) return openBrowser(data.url, 'agent');
@@ -374,15 +413,29 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     }
     function previewRemoteData(data) {
       if (!data || typeof data !== 'object') return;
+      if (data.url && data.url !== 'about:blank') { $('address').value = data.url; localStorage.setItem(STORE.address, data.url); }
       const possible = [data.screenshot, data.screenshotUrl, data.image, data.imageUrl, data.screenshot_url].find((value) => typeof value === 'string' && value.length > 20);
-      if (!possible) return;
+      if (!possible) { $('takeControlButton').hidden = !state.browserSessionId; return; }
       const source = possible.startsWith('data:') ? possible : possible;
-      $('browserShot').src = source; $('browserShot').style.display = 'block'; $('browserFrame').style.display = 'none'; $('viewport').classList.add('loaded'); $('browserStatus').textContent = 'Receiving live remote browser frames';
+      $('browserShot').src = source; $('browserShot').style.display = 'block'; $('browserFrame').style.display = 'none'; $('viewport').classList.add('loaded'); $('takeControlButton').hidden = false; $('browserStatus').textContent = 'Live remote browser · tap Take control to interact';
     }
     function eventDetail(event) {
       const data = event.data || {};
       if (typeof data === 'string') return data;
       return data.message || data.text || data.description || data.action || data.url || event.type || 'Browser event received';
+    }
+    function showHandoff(runId, kind, message) {
+      state.waitingRun = runId; state.waitingKind = kind; state.waitingMessage = message || ''; $('handoffTitle').textContent = kind === 'confirmation_required' ? 'Confirm this browser action.' : 'Sign in on the remote browser.'; $('handoffMessage').textContent = message || (kind === 'confirmation_required' ? 'Orbit paused before a sensitive action.' : 'Orbit paused because private input is needed.'); $('handoffModal').classList.remove('hidden'); $('takeControlButton').hidden = false; logAction('user', kind === 'confirmation_required' ? 'Waiting for confirmation' : 'Waiting for sign-in');
+    }
+    async function resumeWaitingTask() {
+      if (!state.waitingRun) return;
+      const response = await fetch(`/api/browser/${state.waitingRun}/resume`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey() }) });
+      const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Could not resume the browser task.');
+      $('handoffModal').classList.add('hidden'); setControl(false); state.resumeWaiter?.(); state.resumeWaiter = null; logAction('user', 'Resuming the browser task');
+    }
+    async function waitForUser(runId, kind, message) {
+      showHandoff(runId, kind, message);
+      await new Promise((resolve) => { state.resumeWaiter = resolve; });
     }
     async function pollRemoteRun(runId) {
       const key = apiKey(); const direct = false; const base = `/api/browser/${runId}`; const query = `?key=${encodeURIComponent(key)}`; const headers = {}; let after = 0; const deadline = Date.now() + 240000;
@@ -392,8 +445,9 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
         const eventResponse = await fetch(`${base}/events?limit=100&after=${after}&include_output=false&key=${encodeURIComponent(key)}`, { headers });
         if (eventResponse.ok) {
           const eventData = await eventResponse.json();
-          (eventData.events || []).forEach((event) => { after = Math.max(after, Number(event.id) || after); logAction('remote', eventDetail(event)); previewRemoteData(event.data); });
+          (eventData.events || []).forEach((event) => { after = Math.max(after, Number(event.id) || after); logAction('remote', eventDetail(event)); previewRemoteData(event.data); if (['login_required', 'confirmation_required'].includes(event.type)) showHandoff(runId, event.type, event.data?.message); });
         }
+        if (status.status === 'waiting_user') { await waitForUser(runId, state.waitingKind, state.waitingMessage || 'Use Take control to enter private information, then continue.'); continue; }
         if (['completed', 'failed', 'cancelled'].includes(status.status)) {
           const resultResponse = await fetch(`${base}${query}`, { headers });
           const result = await resultResponse.json();
@@ -407,9 +461,9 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     }
     async function runRemoteBrowser(task) {
       const key = apiKey(); if (!key) throw new Error('Add a Gemini API key in Setup to control the free remote browser.');
-      const firstRun = !state.browserSessionId;
       const requestBody = { key, task, model: state.model, sessionId: state.browserSessionId || null };
-      const response = await fetch('/api/browser/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+      let response = await fetch('/api/browser/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
+      if (response.status === 403 && state.browserSessionId) { localStorage.removeItem(STORE.browserSession); state.browserSessionId = ''; requestBody.sessionId = null; response = await fetch('/api/browser/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); }
       const data = await response.json(); if (!response.ok) { const detail = typeof data.detail === 'string' ? data.detail : typeof data.detail?.detail === 'string' ? data.detail.detail : data.detail ? JSON.stringify(data.detail) : data.error; throw new Error(detail || `Browser Use rejected the task (${response.status}).`); }
       state.browserSessionId = data.sessionId || state.browserSessionId; if (state.browserSessionId) localStorage.setItem(STORE.browserSession, state.browserSessionId);
       $('browserStatus').textContent = 'Remote browser is working'; logAction('remote', `Started real browser run ${data.id.slice(0, 8)}`); return pollRemoteRun(data.id);
@@ -455,6 +509,9 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     document.querySelectorAll('.mode-btn').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
     document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => focusSection(button.dataset.nav)));
     $('goButton').addEventListener('click', () => openBrowser($('address').value)); $('address').addEventListener('keydown', (event) => { if (event.key === 'Enter') openBrowser(event.target.value); });
+    $('browserShot').addEventListener('click', async (event) => { if (!state.controlActive) { showToast('Tap Take control before interacting'); return; } const rect = event.currentTarget.getBoundingClientRect(); try { await sendRemoteInput('click', { x: ((event.clientX - rect.left) / rect.width) * (event.currentTarget.naturalWidth || 1280), y: ((event.clientY - rect.top) / rect.height) * (event.currentTarget.naturalHeight || 900) }); logAction('you', 'Clicked the remote browser'); } catch (error) { showToast(error.message); } });
+    $('takeControlButton').addEventListener('click', () => setControl(!state.controlActive)); $('takeControlModal').addEventListener('click', () => { $('handoffModal').classList.add('hidden'); setControl(true); }); $('continueTask').addEventListener('click', () => resumeWaitingTask().catch((error) => showToast(error.message))); $('cancelHandoff').addEventListener('click', () => { $('handoffModal').classList.add('hidden'); showToast('Task remains paused'); }); $('releaseControl').addEventListener('click', () => setControl(false));
+    $('remoteType').addEventListener('click', async () => { const input = $('remoteText'); if (!input.value) return; try { await sendRemoteInput('type', { text: input.value }); logAction('you', 'Typed into the remote browser'); input.value = ''; } catch (error) { showToast(error.message); } }); $('remoteEnter').addEventListener('click', async () => { try { await sendRemoteInput('key', { keyName: 'Enter' }); } catch (error) { showToast(error.message); } }); $('remoteText').addEventListener('keydown', (event) => { if (event.key === 'Enter') $('remoteType').click(); });
     $('clearButton').addEventListener('click', () => { state.messages = []; saveJson(STORE.messages, state.messages); renderMessages(); showToast('Conversation cleared'); });
     $('forgetButton').addEventListener('click', () => { if (!state.memories.length || confirm('Forget all saved memories on this device?')) { state.memories = []; saveJson(STORE.memories, state.memories); renderMemories(); showToast('Memory vault cleared'); } });
     $('messages').addEventListener('click', (event) => { const button = event.target.closest('[data-speak]'); if (button) speak(button.dataset.speak); });
