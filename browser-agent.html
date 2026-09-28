@@ -203,13 +203,12 @@
       </section>
     </main>
   </div>
-  <div class="modal-backdrop hidden" id="setupModal"><div class="modal"><div class="eyebrow">One-time setup</div><h3>Connect your agent.</h3><p>Gemini powers chat, vision, and search. A Browser Use key enables a real remote browser that can navigate sites and complete tasks for you.</p><div class="field"><label for="apiKey">Gemini API key</label><input id="apiKey" type="password" placeholder="AIza..." autocomplete="off"></div><div class="field"><label for="browserKey">Browser Use API key <span style="color:var(--teal)">(for real browser tasks)</span></label><input id="browserKey" type="password" placeholder="bu_..." autocomplete="off"></div><div class="field"><label for="modelInput">Model</label><input id="modelInput" value="gemini-3.5-flash" autocomplete="off"></div><div class="modal-note">Keys stay in this device's browser storage and are sent directly to their providers. Orbit will not submit forms, send messages, make purchases, or take irreversible actions unless you explicitly request it.</div><div class="modal-actions"><button class="outline-btn" id="cancelSetup">Not now</button><button class="primary-btn" id="saveSetup">Save and connect</button></div></div></div>
+  <div class="modal-backdrop hidden" id="setupModal"><div class="modal"><div class="eyebrow">One-time setup</div><h3>Connect your free agent.</h3><p>One Gemini API key powers chat, vision, web search, and the remote Playwright browser. This free-tier version does not use Browser Use billing.</p><div class="field"><label for="apiKey">Gemini API key</label><input id="apiKey" type="password" placeholder="AIza..." autocomplete="off"></div><div class="field"><label for="modelInput">Model</label><input id="modelInput" value="gemini-3.5-flash" autocomplete="off"></div><div class="modal-note">Your key is stored only in this device's browser storage and sent over HTTPS to the app. Orbit will not submit forms, send messages, make purchases, or take irreversible actions unless you explicitly request it.</div><div class="modal-actions"><button class="outline-btn" id="cancelSetup">Not now</button><button class="primary-btn" id="saveSetup">Save and connect</button></div></div></div>
   <div class="toast" id="toast"></div>
   <script>
     const MODEL_DEFAULT = 'gemini-3.5-flash';
     const STORE = {
       key: 'orbit-gemini-key',
-      browserKey: 'orbit-browser-use-key',
       browserSession: 'orbit-browser-session',
       model: 'orbit-gemini-model',
       messages: 'orbit-chat-history',
@@ -244,11 +243,9 @@
       clearTimeout(showToast.timer); showToast.timer = setTimeout(() => toast.classList.remove('show'), 2800);
     }
     function apiKey() { return localStorage.getItem(STORE.key) || ''; }
-    function browserKey() { return localStorage.getItem(STORE.browserKey) || ''; }
     function setConnection(connected) {
       $('connectionDot').classList.toggle('ok', connected);
-      const browserConnected = Boolean(browserKey());
-      $('connectionText').textContent = connected && browserConnected ? 'Gemini + Browser connected' : connected ? 'Gemini connected' : browserConnected ? 'Browser connected' : 'Gemini not connected';
+      $('connectionText').textContent = connected ? 'Gemini + Browser connected' : 'Gemini not connected';
     }
     function renderStats() {
       $('messageCount').textContent = state.messages.filter((item) => item.role === 'user').length;
@@ -287,7 +284,7 @@
       $('liveDot').classList.toggle('ok', !isBusy); $('sendButton').textContent = isBusy ? '...' : '>';
     }
     function openSetup() {
-      $('apiKey').value = apiKey(); $('browserKey').value = browserKey(); $('modelInput').value = state.model; $('setupModal').classList.remove('hidden');
+      $('apiKey').value = apiKey(); $('modelInput').value = state.model; $('setupModal').classList.remove('hidden');
       setTimeout(() => $('apiKey').focus(), 50);
     }
     function closeSetup() { $('setupModal').classList.add('hidden'); }
@@ -388,11 +385,11 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       return data.message || data.text || data.description || data.action || data.url || event.type || 'Browser event received';
     }
     async function pollRemoteRun(runId) {
-      const key = browserKey(); const direct = location.hostname.endsWith('.pages.bu.app'); const base = direct ? `https://api.browser-use.com/api/v4/runs/${runId}` : `/api/browser/${runId}`; const query = direct ? '' : `?key=${encodeURIComponent(key)}`; const headers = direct ? { 'X-Browser-Use-API-Key': key } : {}; let after = 0; const deadline = Date.now() + 240000;
+      const key = apiKey(); const direct = false; const base = `/api/browser/${runId}`; const query = `?key=${encodeURIComponent(key)}`; const headers = {}; let after = 0; const deadline = Date.now() + 240000;
       while (Date.now() < deadline) {
         const statusResponse = await fetch(`${base}/status${query}`, { headers });
         const status = await statusResponse.json();
-        const eventResponse = await fetch(`${base}/events${direct ? '?' : '&'}limit=100&after=${after}&include_output=false${direct ? '' : `&key=${encodeURIComponent(key)}`}`, { headers });
+        const eventResponse = await fetch(`${base}/events?limit=100&after=${after}&include_output=false&key=${encodeURIComponent(key)}`, { headers });
         if (eventResponse.ok) {
           const eventData = await eventResponse.json();
           (eventData.events || []).forEach((event) => { after = Math.max(after, Number(event.id) || after); logAction('remote', eventDetail(event)); previewRemoteData(event.data); });
@@ -409,17 +406,10 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       throw new Error('The remote browser took too long to respond. You can try the task again.');
     }
     async function runRemoteBrowser(task) {
-      const key = browserKey(); if (!key) throw new Error('Add a Browser Use API key in Setup to control a real remote browser.');
+      const key = apiKey(); if (!key) throw new Error('Add a Gemini API key in Setup to control the free remote browser.');
       const firstRun = !state.browserSessionId;
-      const requestBody = {
-        task: `Operate a real browser for the user. Complete this request: ${task}. You may navigate, click, type, scroll, and inspect pages. Do not submit forms, send messages, purchase anything, delete data, or take other irreversible actions unless the user's request explicitly asks for that exact action. Report what you actually did.`,
-        model: state.model,
-        sessionId: state.browserSessionId || null,
-        maxCostUsd: 0.75
-      };
-      if (firstRun) requestBody.browserSettings = { record: true, screenWidth: 1280, screenHeight: 900 };
-      const direct = location.hostname.endsWith('.pages.bu.app');
-      const response = await fetch(direct ? 'https://api.browser-use.com/api/v4/runs' : '/api/browser/run', { method: 'POST', headers: direct ? { 'X-Browser-Use-API-Key': key, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' }, body: JSON.stringify(direct ? requestBody : { key, task: requestBody.task, model: requestBody.model, sessionId: requestBody.sessionId }) });
+      const requestBody = { key, task, model: state.model, sessionId: state.browserSessionId || null };
+      const response = await fetch('/api/browser/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       const data = await response.json(); if (!response.ok) { const detail = typeof data.detail === 'string' ? data.detail : typeof data.detail?.detail === 'string' ? data.detail.detail : data.detail ? JSON.stringify(data.detail) : data.error; throw new Error(detail || `Browser Use rejected the task (${response.status}).`); }
       state.browserSessionId = data.sessionId || state.browserSessionId; if (state.browserSessionId) localStorage.setItem(STORE.browserSession, state.browserSessionId);
       $('browserStatus').textContent = 'Remote browser is working'; logAction('remote', `Started real browser run ${data.id.slice(0, 8)}`); return pollRemoteRun(data.id);
@@ -427,11 +417,11 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     async function sendMessage() {
       const input = $('prompt'); const text = input.value.trim();
       if (!text || state.busy) return;
-      if (state.mode === 'browser' ? !browserKey() && !apiKey() : !apiKey()) { openSetup(); showToast(state.mode === 'browser' ? 'Add a Gemini or Browser Use key to start' : 'Add a Gemini key to start chatting'); return; }
+      if (!apiKey()) { openSetup(); showToast('Add a Gemini API key to start'); return; }
       input.value = ''; input.style.height = 'auto'; pushMessage('user', text); setBusy(true, state.mode === 'browser' ? 'Planning browser task' : state.mode === 'search' ? 'Searching the web' : 'Thinking');
       logAction('agent', `Working on: ${text.slice(0, 70)}${text.length > 70 ? '...' : ''}`);
       try {
-        const result = state.mode === 'browser' && browserKey() ? await runRemoteBrowser(text) : await callGemini(text);
+        const result = state.mode === 'browser' ? await runRemoteBrowser(text) : await callGemini(text);
         pushMessage('assistant', result.answer);
         result.memories.forEach((memory) => addMemory(memory.label, memory.text));
         result.sources.slice(0, 5).forEach((source) => logAction('source', source.title || source.url));
@@ -456,7 +446,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       document.querySelectorAll('.nav-item').forEach((item) => item.classList.toggle('active', item.dataset.nav === name));
     }
     $('setupButton').addEventListener('click', openSetup); $('mobileSetup').addEventListener('click', openSetup); $('cancelSetup').addEventListener('click', closeSetup);
-    $('saveSetup').addEventListener('click', () => { const key = $('apiKey').value.trim(); const browserApiKey = $('browserKey').value.trim(); const model = $('modelInput').value.trim() || MODEL_DEFAULT; if (!key && !browserApiKey) { showToast('Add at least one API key first'); return; } if (key) localStorage.setItem(STORE.key, key); else localStorage.removeItem(STORE.key); if (browserApiKey) localStorage.setItem(STORE.browserKey, browserApiKey); else localStorage.removeItem(STORE.browserKey); localStorage.setItem(STORE.model, model); state.model = model; setConnection(Boolean(key)); renderStats(); closeSetup(); showToast(browserApiKey ? 'Remote browser connected on this device' : 'Gemini connected on this device'); });
+    $('saveSetup').addEventListener('click', () => { const key = $('apiKey').value.trim(); const model = $('modelInput').value.trim() || MODEL_DEFAULT; if (!key) { showToast('Paste a Gemini API key first'); return; } localStorage.setItem(STORE.key, key); localStorage.setItem(STORE.model, model); state.model = model; setConnection(true); renderStats(); closeSetup(); showToast('Free Gemini + browser agent connected'); });
     $('setupModal').addEventListener('click', (event) => { if (event.target === $('setupModal')) closeSetup(); });
     $('sendButton').addEventListener('click', sendMessage); $('attachButton').addEventListener('click', () => $('imageInput').click()); $('imageInput').addEventListener('change', (event) => attachImage(event.target.files[0]));
     $('prompt').addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
@@ -469,7 +459,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     $('messages').addEventListener('click', (event) => { const button = event.target.closest('[data-speak]'); if (button) speak(button.dataset.speak); });
     const savedAddress = localStorage.getItem(STORE.address); if (savedAddress) $('address').value = savedAddress;
     setConnection(Boolean(apiKey())); renderMessages(); renderMemories(); setMode('chat');
-    if (!apiKey() && !browserKey()) setTimeout(openSetup, 650);
+    if (!apiKey()) setTimeout(openSetup, 650);
   </script>
 </body>
 </html>
