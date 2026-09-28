@@ -236,6 +236,12 @@ async def browser_input(session_id: str, body: ControlInput) -> dict[str, Any]:
         if not body.url.startswith(("https://", "http://")):
             raise HTTPException(400, "Only http and https addresses are allowed.")
         await page.goto(body.url, wait_until="domcontentloaded", timeout=30000)
+    elif body.type == "back":
+        await page.go_back(wait_until="domcontentloaded", timeout=30000)
+    elif body.type == "forward":
+        await page.go_forward(wait_until="domcontentloaded", timeout=30000)
+    elif body.type == "reload":
+        await page.reload(wait_until="domcontentloaded", timeout=30000)
     elif body.type == "click":
         await page.mouse.click(body.x or 0, body.y or 0)
     elif body.type == "type":

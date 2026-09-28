@@ -61,6 +61,13 @@
     .hero-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
     .stat { border: 1px solid var(--line); background: rgba(0,0,0,.15); border-radius: 10px; padding: 8px 10px; color: var(--muted); font-size: 11px; }
     .stat b { color: var(--text); font-size: 12px; margin-right: 4px; }
+    .mission-bar { display: flex; align-items: center; gap: 11px; border: 1px solid rgba(94,234,212,.18); background: linear-gradient(90deg, rgba(94,234,212,.08), rgba(94,234,212,.02)); border-radius: 14px; padding: 10px 12px; }
+    .mission-icon { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #092420; background: var(--teal); font-weight: 900; }
+    .mission-copy { min-width: 0; flex: 1; }
+    .mission-copy b, .mission-copy span { display: block; }
+    .mission-copy b { font-size: 11px; }
+    .mission-copy span { color: var(--muted); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .mission-state { border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; color: var(--teal); font-size: 10px; font-weight: 800; }
     .chat-card { min-height: 420px; flex: 1; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); display: flex; flex-direction: column; overflow: hidden; }
     .chat-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
     .chat-head strong { font-size: 12px; }
@@ -77,6 +84,10 @@
     .speaker { border: 0; background: transparent; color: var(--teal); padding: 0; font-size: 11px; }
     .speaker:hover { color: white; }
     .composer { padding: 13px 15px 15px; border-top: 1px solid var(--line); background: #10151b; }
+    .quick-start { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 10px; scrollbar-width: none; }
+    .quick-start::-webkit-scrollbar { display: none; }
+    .quick-chip { flex: 0 0 auto; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 6px 9px; font-size: 10px; }
+    .quick-chip:hover { color: var(--teal); border-color: rgba(94,234,212,.5); background: rgba(94,234,212,.06); }
     .mode-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .mode-toggle { display: flex; gap: 4px; }
     .mode-btn { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 8px; border-radius: 7px; font-size: 11px; }
@@ -94,6 +105,9 @@
     .card-title strong { font-size: 12px; }
     .card-title span { color: var(--muted); font-size: 10px; }
     .browser-toolbar { padding: 10px; display: flex; gap: 7px; background: #0d1117; border-bottom: 1px solid var(--line); }
+    .browser-nav { display: flex; gap: 4px; }
+    .browser-nav button { width: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--muted); }
+    .browser-nav button:hover { color: var(--teal); border-color: var(--teal); }
     .browser-toolbar input { min-width: 0; flex: 1; background: #151c24; border: 1px solid var(--line); border-radius: 9px; color: var(--text); padding: 8px 10px; outline: none; font-size: 11px; }
     .browser-toolbar input:focus { border-color: var(--teal); }
     .go-btn { border: 0; border-radius: 9px; background: var(--teal); color: #08211e; font-weight: 800; padding: 0 12px; }
@@ -171,6 +185,7 @@
       .message { max-width: 96%; }
       .browser-column { display: flex; }
       .viewport { height: 260px; }
+      .mission-bar { padding: 9px 10px; }
       .memory-card { order: 3; }
       .top-actions .outline-btn { display: none; }
       .modal { width: min(354px, calc(100% - 24px)); max-height: calc(100vh - 28px); overflow: auto; }
@@ -198,16 +213,17 @@
       <section class="workspace">
         <section class="chat-column">
           <div class="hero"><div class="eyebrow">Personal web copilot</div><h2>Tell Orbit the outcome. It handles the steps.</h2><p>Orbit reads the page, chooses the next move, checks the result, and pauses only when your private input or approval is needed.</p><div class="hero-stats"><div class="stat"><b id="messageCount">0</b> messages</div><div class="stat"><b id="memoryCount">0</b> saved memories</div><div class="stat"><b>observe</b> + act loop</div></div></div>
+          <div class="mission-bar"><div class="mission-icon">O</div><div class="mission-copy"><b id="missionTitle">Ready for a mission</b><span id="missionDetail">Ask Orbit anything or give it a browser goal.</span></div><div class="mission-state" id="missionState">Idle</div></div>
           <div class="chat-card" id="chatCard">
             <div class="chat-head"><div><strong>Conversation</strong><br><span id="conversationLabel">New session</span></div><span id="modelLabel">gemini-3.5-flash</span></div>
             <div class="messages" id="messages"></div>
-            <div class="composer"><div class="mode-row"><div class="mode-toggle"><button class="mode-btn active" data-mode="chat">Chat</button><button class="mode-btn" data-mode="search">Web search</button><button class="mode-btn" data-mode="browser">Browser task</button></div><button class="round-btn" id="attachButton" aria-label="Attach image">+</button><input type="file" id="imageInput" accept="image/*" hidden></div><div class="composer-box"><textarea id="prompt" rows="1" placeholder="Ask anything, or tell Orbit what to do..."></textarea><button class="round-btn send-btn" id="sendButton" aria-label="Send">></button></div><div class="hint">Enter to send · Shift + Enter for a new line · image vision supported</div></div>
+            <div class="composer"><div class="quick-start"><button class="quick-chip" data-mode="browser" data-prompt="Open a website and explore it for me">Explore a website</button><button class="quick-chip" data-mode="search" data-prompt="Research the latest information about ">Research a topic</button><button class="quick-chip" data-mode="browser" data-prompt="Find the right form and help me fill it out">Fill out a form</button><button class="quick-chip" data-mode="chat" data-prompt="Help me think through this: ">Think it through</button></div><div class="mode-row"><div class="mode-toggle"><button class="mode-btn active" data-mode="chat">Chat</button><button class="mode-btn" data-mode="search">Web search</button><button class="mode-btn" data-mode="browser">Browser task</button></div><button class="round-btn" id="attachButton" aria-label="Attach image">+</button><input type="file" id="imageInput" accept="image/*" hidden></div><div class="composer-box"><textarea id="prompt" rows="1" placeholder="Ask anything, or tell Orbit what to do..."></textarea><button class="round-btn send-btn" id="sendButton" aria-label="Send">></button></div><div class="hint">Enter to send · Shift + Enter for a new line · image vision supported</div></div>
           </div>
         </section>
         <section class="browser-column" id="browserSection">
           <div class="browser-card">
             <div class="card-title"><div><strong>Remote browser</strong><br><span>Orbit's live viewport · take control when needed</span></div><span class="status-pill"><i class="dot ok"></i> Live</span></div>
-            <div class="browser-toolbar"><input id="address" value="https://example.com" aria-label="Browser address"><button class="go-btn" id="goButton">Go</button></div>
+            <div class="browser-toolbar"><div class="browser-nav"><button id="backButton" aria-label="Go back">‹</button><button id="forwardButton" aria-label="Go forward">›</button><button id="refreshButton" aria-label="Refresh">↻</button></div><input id="address" value="https://example.com" aria-label="Browser address"><button class="go-btn" id="goButton">Go</button></div>
             <div class="viewport" id="viewport"><div class="viewport-empty"><div><div class="empty-icon">[]</div><strong>Viewport ready</strong><p>Ask for a browser task or enter a URL above to open a live page.</p></div></div><iframe id="browserFrame" title="Live browser viewport" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe><img id="browserShot" alt="Live remote browser screenshot"></div>
             <div class="browser-foot"><i class="dot ok"></i><span id="browserStatus">Waiting for a browser task</span><button class="tiny-btn" id="takeControlButton" hidden>Take control</button></div>
             <div class="remote-controls" id="remoteControls" hidden><div class="remote-control-label"><span><b>Remote control on</b> · tap the viewport to click</span><span>private session</span></div><div class="remote-control-row"><input id="remoteText" type="text" placeholder="Type into the active field..."><button class="primary" id="remoteType">Type</button><button id="remoteEnter">Enter</button><button id="releaseControl">Release</button></div></div>
@@ -300,9 +316,10 @@
       const message = { role, text, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) };
       state.messages.push(message); state.messages = state.messages.slice(-60); saveJson(STORE.messages, state.messages); renderMessages();
     }
+    function setMission(title, detail, stateLabel = 'Idle') { $('missionTitle').textContent = title; $('missionDetail').textContent = detail; $('missionState').textContent = stateLabel; }
     function setBusy(isBusy, status) {
       state.busy = isBusy; $('sendButton').disabled = isBusy; $('liveStatus').textContent = status || (isBusy ? 'Thinking' : 'Ready');
-      $('liveDot').classList.toggle('ok', !isBusy); $('sendButton').textContent = isBusy ? '...' : '>';
+      $('liveDot').classList.toggle('ok', !isBusy); $('sendButton').textContent = isBusy ? '...' : '>'; if (isBusy) setMission(status || 'Working', 'Orbit is observing the page and choosing the next best step.', 'Active'); else if (status === 'Ready') setMission('Ready for a mission', 'Ask Orbit anything or give it a browser goal.', 'Idle');
     }
     function openSetup() {
       $('apiKey').value = apiKey(); $('modelInput').value = state.model; $('setupModal').classList.remove('hidden');
@@ -417,7 +434,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       const possible = [data.screenshot, data.screenshotUrl, data.image, data.imageUrl, data.screenshot_url].find((value) => typeof value === 'string' && value.length > 20);
       if (!possible) { $('takeControlButton').hidden = !state.browserSessionId; return; }
       const source = possible.startsWith('data:') ? possible : possible;
-      $('browserShot').src = source; $('browserShot').style.display = 'block'; $('browserFrame').style.display = 'none'; $('viewport').classList.add('loaded'); $('takeControlButton').hidden = false; $('browserStatus').textContent = 'Live remote browser · tap Take control to interact';
+      $('browserShot').src = source; $('browserShot').style.display = 'block'; $('browserFrame').style.display = 'none'; $('viewport').classList.add('loaded'); $('takeControlButton').hidden = false; $('browserStatus').textContent = 'Live remote browser · tap Take control to interact'; setMission('Remote browser ready', data.url ? `Viewing ${new URL(data.url).hostname}` : 'Orbit has a live browser session open.', 'Live');
     }
     function eventDetail(event) {
       const data = event.data || {};
@@ -425,7 +442,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       return data.message || data.text || data.description || data.action || data.url || event.type || 'Browser event received';
     }
     function showHandoff(runId, kind, message) {
-      state.waitingRun = runId; state.waitingKind = kind; state.waitingMessage = message || ''; $('handoffTitle').textContent = kind === 'confirmation_required' ? 'Confirm this browser action.' : 'Sign in on the remote browser.'; $('handoffMessage').textContent = message || (kind === 'confirmation_required' ? 'Orbit paused before a sensitive action.' : 'Orbit paused because private input is needed.'); $('handoffModal').classList.remove('hidden'); $('takeControlButton').hidden = false; logAction('user', kind === 'confirmation_required' ? 'Waiting for confirmation' : 'Waiting for sign-in');
+      state.waitingRun = runId; state.waitingKind = kind; state.waitingMessage = message || ''; $('handoffTitle').textContent = kind === 'confirmation_required' ? 'Confirm this browser action.' : 'Sign in on the remote browser.'; $('handoffMessage').textContent = message || (kind === 'confirmation_required' ? 'Orbit paused before a sensitive action.' : 'Orbit paused because private input is needed.'); $('handoffModal').classList.remove('hidden'); $('takeControlButton').hidden = false; setMission(kind === 'confirmation_required' ? 'Waiting for your approval' : 'Waiting for your sign-in', state.waitingMessage || 'Take control of the remote browser to continue.', 'Paused'); logAction('user', kind === 'confirmation_required' ? 'Waiting for confirmation' : 'Waiting for sign-in');
     }
     async function resumeWaitingTask() {
       if (!state.waitingRun) return;
@@ -478,13 +495,14 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
         const result = state.mode === 'browser' ? await runRemoteBrowser(text) : await callGemini(text);
         result.actions = Array.isArray(result.actions) ? result.actions : []; result.memories = Array.isArray(result.memories) ? result.memories : []; result.sources = Array.isArray(result.sources) ? result.sources : [];
         pushMessage('assistant', result.answer);
+        setMission('Mission complete', result.answer.slice(0, 130), 'Done');
         result.memories.forEach((memory) => addMemory(memory.label, memory.text));
         result.sources.slice(0, 5).forEach((source) => logAction('source', source.title || source.url));
         for (const action of result.actions.slice(0, 8)) { if (action && action.type) browserAction(action.type, action); }
         state.image = null; state.imageName = '';
         if (result.actions.length) $('browserStatus').textContent = `${result.actions.length} browser step${result.actions.length === 1 ? '' : 's'} planned`;
       } catch (error) {
-        pushMessage('assistant', `I could not complete that request. ${error.message}`); logAction('error', error.message); showToast(error.message.slice(0, 110));
+        pushMessage('assistant', `I could not complete that request. ${error.message}`); setMission('Needs another try', error.message, 'Error'); logAction('error', error.message); showToast(error.message.slice(0, 110));
       } finally { setBusy(false, 'Ready'); }
     }
     function speak(text) {
@@ -507,8 +525,10 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     $('prompt').addEventListener('keydown', (event) => { if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); sendMessage(); } });
     $('prompt').addEventListener('input', (event) => { event.target.style.height = 'auto'; event.target.style.height = `${Math.min(event.target.scrollHeight, 120)}px`; });
     document.querySelectorAll('.mode-btn').forEach((button) => button.addEventListener('click', () => setMode(button.dataset.mode)));
+    document.querySelectorAll('.quick-chip').forEach((button) => button.addEventListener('click', () => { setMode(button.dataset.mode); $('prompt').value = button.dataset.prompt; $('prompt').focus(); $('prompt').dispatchEvent(new Event('input')); }));
     document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => focusSection(button.dataset.nav)));
     $('goButton').addEventListener('click', () => openBrowser($('address').value)); $('address').addEventListener('keydown', (event) => { if (event.key === 'Enter') openBrowser(event.target.value); });
+    $('backButton').addEventListener('click', async () => { try { await sendRemoteInput('back'); } catch (error) { showToast(error.message); } }); $('forwardButton').addEventListener('click', async () => { try { await sendRemoteInput('forward'); } catch (error) { showToast(error.message); } }); $('refreshButton').addEventListener('click', async () => { try { await sendRemoteInput('reload'); } catch (error) { showToast(error.message); } });
     $('browserShot').addEventListener('click', async (event) => { if (!state.controlActive) { showToast('Tap Take control before interacting'); return; } const rect = event.currentTarget.getBoundingClientRect(); try { await sendRemoteInput('click', { x: ((event.clientX - rect.left) / rect.width) * (event.currentTarget.naturalWidth || 1280), y: ((event.clientY - rect.top) / rect.height) * (event.currentTarget.naturalHeight || 900) }); logAction('you', 'Clicked the remote browser'); } catch (error) { showToast(error.message); } });
     $('takeControlButton').addEventListener('click', () => setControl(!state.controlActive)); $('takeControlModal').addEventListener('click', () => { $('handoffModal').classList.add('hidden'); setControl(true); }); $('continueTask').addEventListener('click', () => resumeWaitingTask().catch((error) => showToast(error.message))); $('cancelHandoff').addEventListener('click', () => { $('handoffModal').classList.add('hidden'); showToast('Task remains paused'); }); $('releaseControl').addEventListener('click', () => setControl(false));
     $('remoteType').addEventListener('click', async () => { const input = $('remoteText'); if (!input.value) return; try { await sendRemoteInput('type', { text: input.value }); logAction('you', 'Typed into the remote browser'); input.value = ''; } catch (error) { showToast(error.message); } }); $('remoteEnter').addEventListener('click', async () => { try { await sendRemoteInput('key', { keyName: 'Enter' }); } catch (error) { showToast(error.message); } }); $('remoteText').addEventListener('keydown', (event) => { if (event.key === 'Enter') $('remoteType').click(); });
