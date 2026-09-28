@@ -3,50 +3,52 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0d1117">
-  <meta name="description" content="A mobile-friendly Gemini browser agent workspace.">
-  <title>Orbit Agent | Gemini browser workspace</title>
+  <meta name="theme-color" content="#ffffff">
+  <meta name="description" content="Orbit is a personal AI browser that can reason, search, and act.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23111827'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='%2360a5fa' stroke-width='5'/%3E%3Cpath d='M18 38c8-17 24-18 29-6' fill='none' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='47' cy='23' r='4' fill='%2360a5fa'/%3E%3C/svg%3E">
+  <title>Orbit | Personal AI browser</title>
   <style>
     :root {
-      --bg: #0a0d12;
-      --panel: #11161d;
-      --panel-2: #171e27;
-      --line: #28323d;
-      --muted: #8f9bab;
-      --text: #f4f7fb;
-      --teal: #5eead4;
-      --teal-deep: #0d9488;
-      --orange: #ffb86b;
-      --rose: #ff7b8a;
-      --shadow: 0 18px 60px rgba(0, 0, 0, .35);
+      --bg: #f7f9fc;
+      --panel: #ffffff;
+      --panel-2: #f1f5f9;
+      --line: #e4e9f1;
+      --muted: #667085;
+      --text: #111827;
+      --teal: #2563eb;
+      --teal-deep: #1d4ed8;
+      --orange: #f97316;
+      --rose: #e45f7c;
+      --shadow: 0 18px 60px rgba(31, 41, 55, .08);
       --radius: 18px;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); }
+    html, body { margin: 0; min-height: 100%; background: radial-gradient(circle at 12% -10%, #eef5ff 0, transparent 32%), var(--bg); color: var(--text); }
     body { font: 14px/1.45 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     button, input, textarea { font: inherit; }
     button { cursor: pointer; }
     .app { min-height: 100vh; display: grid; grid-template-columns: 248px minmax(0, 1fr); }
-    .rail { border-right: 1px solid var(--line); padding: 22px 16px; display: flex; flex-direction: column; background: #0d1117; }
+    .rail { border-right: 1px solid var(--line); padding: 22px 16px; display: flex; flex-direction: column; background: rgba(255,255,255,.86); }
     .brand { display: flex; gap: 11px; align-items: center; padding: 2px 8px 24px; }
-    .brand-mark { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; color: #092420; background: linear-gradient(135deg, var(--teal), #a7f3d0); font-weight: 900; box-shadow: 0 8px 22px rgba(94,234,212,.22); }
+    .brand-mark { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; color: white; background: #111827; font-weight: 900; box-shadow: 0 9px 22px rgba(37,99,235,.2); }
+    .brand-mark svg { width: 25px; height: 25px; }
     .brand strong { display: block; letter-spacing: -.02em; font-size: 15px; }
     .brand small { color: var(--muted); font-size: 11px; }
     .rail-nav { display: grid; gap: 5px; }
     .nav-item { border: 1px solid transparent; color: var(--muted); background: transparent; text-align: left; border-radius: 12px; padding: 11px 12px; display: flex; gap: 10px; align-items: center; }
-    .nav-item:hover, .nav-item.active { color: var(--text); background: var(--panel-2); border-color: var(--line); }
+    .nav-item:hover, .nav-item.active { color: var(--text); background: #eef4ff; border-color: #d7e4ff; }
     .nav-item.active { box-shadow: inset 3px 0 var(--teal); }
     .nav-icon { width: 18px; text-align: center; color: var(--teal); font-weight: 800; }
     .rail-spacer { flex: 1; }
-    .connection { border: 1px solid var(--line); background: linear-gradient(180deg, rgba(94,234,212,.08), rgba(94,234,212,.02)); border-radius: 15px; padding: 13px; }
+    .connection { border: 1px solid #dbe7fb; background: linear-gradient(180deg, rgba(37,99,235,.08), rgba(37,99,235,.02)); border-radius: 15px; padding: 13px; }
     .connection-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 4px rgba(255,184,107,.12); }
-    .dot.ok { background: var(--teal); box-shadow: 0 0 0 4px rgba(94,234,212,.12); }
+    .dot.ok { background: var(--teal); box-shadow: 0 0 0 4px rgba(37,99,235,.12); }
     .connection p { color: var(--muted); margin: 8px 0 11px; font-size: 11px; }
     .tiny-btn, .outline-btn { border: 1px solid var(--line); background: transparent; color: var(--text); border-radius: 9px; padding: 8px 10px; font-size: 12px; }
     .tiny-btn:hover, .outline-btn:hover { border-color: var(--teal); color: var(--teal); }
     .main { min-width: 0; display: grid; grid-template-rows: 64px minmax(0, 1fr); }
-    .topbar { border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: rgba(10,13,18,.84); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 4; }
+    .topbar { border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; background: rgba(255,255,255,.82); backdrop-filter: blur(16px); position: sticky; top: 0; z-index: 4; }
     .topbar-title { display: flex; align-items: center; gap: 10px; }
     .topbar-title h1 { font-size: 15px; margin: 0; letter-spacing: -.02em; }
     .topbar-title span { color: var(--muted); font-size: 12px; }
@@ -55,20 +57,20 @@
     .workspace { padding: 24px 28px 34px; display: grid; grid-template-columns: minmax(0, 1.14fr) minmax(330px, .86fr); gap: 22px; min-height: 0; }
     .chat-column, .browser-column { min-width: 0; display: flex; flex-direction: column; gap: 15px; }
     .eyebrow { color: var(--teal); text-transform: uppercase; letter-spacing: .14em; font-size: 10px; font-weight: 800; }
-    .hero { border: 1px solid var(--line); border-radius: var(--radius); background: radial-gradient(circle at 95% 0%, rgba(255,184,107,.12), transparent 34%), linear-gradient(135deg, #151d25, #11161d); padding: 22px; box-shadow: var(--shadow); }
+    .hero { border: 1px solid var(--line); border-radius: var(--radius); background: radial-gradient(circle at 95% 0%, rgba(96,165,250,.22), transparent 34%), linear-gradient(135deg, #ffffff, #f8fbff); padding: 22px; box-shadow: var(--shadow); }
     .hero h2 { margin: 7px 0 7px; font-size: clamp(23px, 3vw, 33px); line-height: 1.08; letter-spacing: -.045em; max-width: 500px; }
     .hero p { margin: 0; max-width: 590px; color: var(--muted); }
     .hero-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 17px; }
-    .stat { border: 1px solid var(--line); background: rgba(0,0,0,.15); border-radius: 10px; padding: 8px 10px; color: var(--muted); font-size: 11px; }
+    .stat { border: 1px solid var(--line); background: rgba(255,255,255,.75); border-radius: 10px; padding: 8px 10px; color: var(--muted); font-size: 11px; }
     .stat b { color: var(--text); font-size: 12px; margin-right: 4px; }
-    .mission-bar { display: flex; align-items: center; gap: 11px; border: 1px solid rgba(94,234,212,.18); background: linear-gradient(90deg, rgba(94,234,212,.08), rgba(94,234,212,.02)); border-radius: 14px; padding: 10px 12px; }
-    .mission-icon { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #092420; background: var(--teal); font-weight: 900; }
+    .mission-bar { display: flex; align-items: center; gap: 11px; border: 1px solid rgba(37,99,235,.18); background: linear-gradient(90deg, rgba(37,99,235,.08), rgba(37,99,235,.02)); border-radius: 14px; padding: 10px 12px; }
+    .mission-icon { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: white; background: var(--teal); font-weight: 900; }
     .mission-copy { min-width: 0; flex: 1; }
     .mission-copy b, .mission-copy span { display: block; }
     .mission-copy b { font-size: 11px; }
     .mission-copy span { color: var(--muted); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .mission-state { border: 1px solid var(--line); border-radius: 999px; padding: 5px 8px; color: var(--teal); font-size: 10px; font-weight: 800; }
-    .chat-card { min-height: 420px; flex: 1; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); display: flex; flex-direction: column; overflow: hidden; }
+    .chat-card { min-height: 420px; flex: 1; border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.92); display: flex; flex-direction: column; overflow: hidden; }
     .chat-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
     .chat-head strong { font-size: 12px; }
     .chat-head span { color: var(--muted); font-size: 11px; }
@@ -78,85 +80,101 @@
     .message.user { align-self: flex-end; flex-direction: row-reverse; }
     .avatar { flex: 0 0 27px; width: 27px; height: 27px; border-radius: 9px; display: grid; place-items: center; background: var(--panel-2); color: var(--teal); font-size: 10px; font-weight: 900; border: 1px solid var(--line); }
     .user .avatar { color: #21170d; background: var(--orange); border-color: transparent; }
-    .bubble { border: 1px solid var(--line); background: #151c24; border-radius: 5px 15px 15px 15px; padding: 10px 12px; color: #e8edf4; white-space: pre-wrap; }
-    .user .bubble { background: #203e3a; border-color: rgba(94,234,212,.18); border-radius: 15px 5px 15px 15px; }
+    .bubble { border: 1px solid var(--line); background: #f7f9fc; border-radius: 5px 15px 15px 15px; padding: 10px 12px; color: #344054; white-space: pre-wrap; }
+    .user .bubble { background: #eaf2ff; border-color: #cfe0ff; border-radius: 15px 5px 15px 15px; }
     .message-meta { margin-top: 6px; display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 10px; }
     .speaker { border: 0; background: transparent; color: var(--teal); padding: 0; font-size: 11px; }
     .speaker:hover { color: white; }
-    .composer { padding: 13px 15px 15px; border-top: 1px solid var(--line); background: #10151b; }
+    .composer { padding: 13px 15px 15px; border-top: 1px solid var(--line); background: #ffffff; }
     .quick-start { display: flex; gap: 6px; overflow-x: auto; padding: 0 0 10px; scrollbar-width: none; }
     .quick-start::-webkit-scrollbar { display: none; }
     .quick-chip { flex: 0 0 auto; border: 1px solid var(--line); background: transparent; color: var(--muted); border-radius: 999px; padding: 6px 9px; font-size: 10px; }
-    .quick-chip:hover { color: var(--teal); border-color: rgba(94,234,212,.5); background: rgba(94,234,212,.06); }
+    .quick-chip:hover { color: var(--teal); border-color: rgba(37,99,235,.5); background: rgba(37,99,235,.06); }
     .mode-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
     .mode-toggle { display: flex; gap: 4px; }
     .mode-btn { border: 1px solid transparent; background: transparent; color: var(--muted); padding: 5px 8px; border-radius: 7px; font-size: 11px; }
-    .mode-btn.active { color: var(--teal); border-color: rgba(94,234,212,.2); background: rgba(94,234,212,.08); }
-    .composer-box { display: flex; align-items: flex-end; gap: 9px; border: 1px solid var(--line); border-radius: 14px; background: #0d1117; padding: 10px; }
+    .mode-btn.active { color: var(--teal); border-color: rgba(37,99,235,.2); background: rgba(37,99,235,.08); }
+    .composer-box { display: flex; align-items: flex-end; gap: 9px; border: 1px solid #d9e2ef; border-radius: 14px; background: #ffffff; padding: 10px; box-shadow: 0 5px 18px rgba(31,41,55,.04); }
     .composer textarea { flex: 1; min-height: 41px; max-height: 120px; border: 0; outline: 0; resize: none; color: var(--text); background: transparent; padding: 3px 2px; }
     .composer textarea::placeholder { color: #697585; }
     .round-btn { border: 1px solid var(--line); background: var(--panel-2); color: var(--muted); width: 35px; height: 35px; border-radius: 10px; display: grid; place-items: center; }
     .round-btn:hover { color: var(--teal); border-color: var(--teal); }
-    .send-btn { background: var(--teal); color: #08211e; border: 0; font-weight: 900; }
-    .send-btn:hover { background: #99f6e4; }
+    .send-btn { background: var(--teal); color: white; border: 0; font-weight: 900; }
+    .send-btn:hover { background: #1d4ed8; }
     .hint { color: #657080; font-size: 10px; margin: 8px 2px 0; }
-    .browser-card, .memory-card { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); overflow: hidden; }
+    .browser-card, .memory-card { border: 1px solid var(--line); border-radius: var(--radius); background: rgba(255,255,255,.92); overflow: hidden; }
     .card-title { display: flex; align-items: center; justify-content: space-between; padding: 13px 15px; border-bottom: 1px solid var(--line); }
     .card-title strong { font-size: 12px; }
     .card-title span { color: var(--muted); font-size: 10px; }
-    .browser-toolbar { padding: 10px; display: flex; gap: 7px; background: #0d1117; border-bottom: 1px solid var(--line); }
+    .browser-toolbar { padding: 10px; display: flex; gap: 7px; background: #f8fafc; border-bottom: 1px solid var(--line); }
     .browser-nav { display: flex; gap: 4px; }
     .browser-nav button { width: 30px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel-2); color: var(--muted); }
     .browser-nav button:hover { color: var(--teal); border-color: var(--teal); }
-    .browser-toolbar input { min-width: 0; flex: 1; background: #151c24; border: 1px solid var(--line); border-radius: 9px; color: var(--text); padding: 8px 10px; outline: none; font-size: 11px; }
+    .tab-bar { display: flex; align-items: center; gap: 5px; overflow-x: auto; padding: 7px 10px 0; background: #f8fafc; scrollbar-width: none; }
+    .tab-bar::-webkit-scrollbar { display: none; }
+    .tab { max-width: 170px; min-width: 92px; display: flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-bottom: 0; border-radius: 9px 9px 0 0; background: #edf1f6; color: var(--muted); padding: 7px 8px; font-size: 10px; text-align: left; }
+    .tab.active { color: var(--text); background: var(--panel); border-color: rgba(37,99,235,.35); box-shadow: inset 0 2px var(--teal); }
+    .tab-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .tab-close { color: #657080; font-size: 13px; line-height: 1; }
+    .tab-close:hover { color: var(--rose); }
+    .new-tab { flex: 0 0 auto; border: 1px solid var(--line); background: transparent; color: var(--teal); border-radius: 8px; width: 27px; height: 27px; }
+    .new-tab:hover { background: rgba(37,99,235,.1); }
+    .browser-toolbar input { min-width: 0; flex: 1; background: #ffffff; border: 1px solid var(--line); border-radius: 9px; color: var(--text); padding: 8px 10px; outline: none; font-size: 11px; }
     .browser-toolbar input:focus { border-color: var(--teal); }
-    .go-btn { border: 0; border-radius: 9px; background: var(--teal); color: #08211e; font-weight: 800; padding: 0 12px; }
-    .viewport { height: 310px; position: relative; background: #0a0d12; }
+    .go-btn { border: 0; border-radius: 9px; background: var(--teal); color: white; font-weight: 800; padding: 0 12px; }
+    .viewport { height: 310px; position: relative; background: #eef2f7; }
     .viewport iframe, .viewport img { width: 100%; height: 100%; border: 0; background: white; display: none; object-fit: contain; }
     .viewport.loaded iframe { display: block; }
-    .viewport-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 20%, rgba(94,234,212,.09), transparent 34%); }
+    .viewport-empty { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: radial-gradient(circle at 50% 20%, rgba(37,99,235,.09), transparent 34%); }
     .viewport.loaded .viewport-empty { display: none; }
-    .empty-icon { width: 45px; height: 45px; border: 1px solid rgba(94,234,212,.3); border-radius: 14px; display: grid; place-items: center; color: var(--teal); margin: 0 auto 10px; }
+    .empty-icon { width: 45px; height: 45px; border: 1px solid rgba(37,99,235,.3); border-radius: 14px; display: grid; place-items: center; color: var(--teal); margin: 0 auto 10px; }
     .viewport-empty strong { display: block; font-size: 13px; }
     .viewport-empty p { color: var(--muted); font-size: 11px; max-width: 230px; margin: 5px auto 0; }
     .browser-foot { padding: 10px 12px; border-top: 1px solid var(--line); display: flex; align-items: center; gap: 7px; font-size: 10px; color: var(--muted); }
     .browser-foot .dot { width: 6px; height: 6px; box-shadow: none; }
     .browser-foot .tiny-btn { margin-left: auto; padding: 6px 9px; }
     .viewport img { cursor: crosshair; }
-    .remote-controls { padding: 10px 12px 12px; border-top: 1px solid var(--line); background: linear-gradient(180deg, rgba(94,234,212,.06), rgba(94,234,212,.02)); }
+    .remote-controls { padding: 10px 12px 12px; border-top: 1px solid var(--line); background: linear-gradient(180deg, rgba(37,99,235,.06), rgba(37,99,235,.02)); }
     .remote-controls[hidden] { display: none; }
     .remote-control-label { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 10px; margin-bottom: 7px; }
     .remote-control-label b { color: var(--teal); }
     .remote-control-row { display: flex; gap: 6px; }
-    .remote-control-row input { min-width: 0; flex: 1; background: #0d1117; color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; outline: none; font-size: 11px; }
+    .remote-control-row input { min-width: 0; flex: 1; background: #ffffff; color: var(--text); border: 1px solid var(--line); border-radius: 9px; padding: 8px 10px; outline: none; font-size: 11px; }
     .remote-control-row input:focus { border-color: var(--teal); }
     .remote-control-row button { border: 1px solid var(--line); background: var(--panel-2); color: var(--text); border-radius: 9px; padding: 0 10px; font-size: 11px; }
     .remote-control-row button:hover { color: var(--teal); border-color: var(--teal); }
-    .remote-control-row .primary { background: var(--teal); color: #08211e; border-color: transparent; font-weight: 800; }
-    .handoff { border-color: rgba(255,184,107,.4); background: linear-gradient(135deg, #171d24, #1b1916); }
+    .remote-control-row .primary { background: var(--teal); color: white; border-color: transparent; font-weight: 800; }
+    .handoff { border-color: rgba(249,115,22,.35); background: linear-gradient(135deg, #ffffff, #fffaf6); }
     .handoff-badge { display: inline-flex; gap: 7px; align-items: center; color: var(--orange); font-size: 11px; font-weight: 800; }
-    .log { padding: 10px 14px 13px; max-height: 150px; overflow: auto; display: grid; gap: 7px; }
-    .log-line { display: flex; gap: 7px; color: var(--muted); font-size: 10px; }
-    .log-line b { color: var(--teal); font-weight: 600; white-space: nowrap; }
+    .activity-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px 9px; border-top: 1px solid var(--line); }
+    .activity-head strong { font-size: 11px; }
+    .activity-head span { color: var(--teal); font-size: 10px; font-weight: 700; }
+    .log { padding: 2px 14px 13px; max-height: 172px; overflow: auto; display: grid; gap: 7px; }
+    .log-line { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 7px; color: var(--muted); font-size: 10px; padding: 3px 0 3px 8px; border-left: 2px solid #dbe4f0; animation: rise .2s ease-out; }
+    .log-line b { color: var(--teal); font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: .04em; font-size: 9px; }
+    .log-line.log-error { border-left-color: var(--rose); }
+    .log-line.log-error b { color: var(--rose); }
+    .log-line.log-complete { border-left-color: #22a06b; }
+    .log-line.log-complete b { color: #168455; }
     .memory-card { padding-bottom: 13px; }
     .memory-list { padding: 10px 14px 0; display: grid; gap: 8px; }
-    .memory-item { padding: 9px 10px; border-radius: 10px; background: #151c24; border: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+    .memory-item { padding: 9px 10px; border-radius: 10px; background: #f7f9fc; border: 1px solid var(--line); color: var(--muted); font-size: 11px; }
     .memory-item b { color: var(--text); display: block; margin-bottom: 2px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
     .mobile-only { display: none; }
-    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 18px; background: rgba(4,6,9,.72); backdrop-filter: blur(10px); }
+    .modal-backdrop { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 18px; background: rgba(15,23,42,.32); backdrop-filter: blur(10px); }
     .modal-backdrop.hidden { display: none; }
-    .modal { width: min(460px, 100%); border: 1px solid var(--line); border-radius: 20px; background: #111820; padding: 23px; box-shadow: 0 25px 90px rgba(0,0,0,.55); }
+    .modal { width: min(460px, 100%); border: 1px solid var(--line); border-radius: 20px; background: #ffffff; padding: 23px; box-shadow: 0 25px 90px rgba(15,23,42,.2); }
     .modal h3 { margin: 8px 0 7px; font-size: 22px; letter-spacing: -.04em; }
     .modal p { color: var(--muted); font-size: 12px; margin: 0 0 17px; }
     .field { display: grid; gap: 7px; margin: 13px 0; }
     .field label { font-size: 11px; color: var(--muted); }
-    .field input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #0d1117; color: var(--text); padding: 11px 12px; outline: none; }
+    .field input { width: 100%; border: 1px solid var(--line); border-radius: 10px; background: #ffffff; color: var(--text); padding: 11px 12px; outline: none; }
     .field input:focus { border-color: var(--teal); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-    .primary-btn { border: 0; background: var(--teal); color: #08211e; border-radius: 10px; padding: 10px 14px; font-weight: 900; }
-    .primary-btn:hover { background: #99f6e4; }
-    .modal-note { border-left: 2px solid var(--orange); padding-left: 9px; color: #b7bfca; font-size: 11px; }
-    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; z-index: 30; border: 1px solid var(--line); background: #17202a; color: var(--text); border-radius: 999px; padding: 9px 13px; font-size: 11px; transition: .2s ease; }
+    .primary-btn { border: 0; background: var(--teal); color: white; border-radius: 10px; padding: 10px 14px; font-weight: 900; }
+    .primary-btn:hover { background: #1d4ed8; }
+    .modal-note { border-left: 2px solid var(--orange); padding-left: 9px; color: #667085; font-size: 11px; }
+    .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; z-index: 30; border: 1px solid var(--line); background: #ffffff; color: var(--text); border-radius: 999px; padding: 9px 13px; font-size: 11px; transition: .2s ease; box-shadow: var(--shadow); }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     @media (max-width: 980px) {
       .app { grid-template-columns: 70px minmax(0, 1fr); }
@@ -196,7 +214,7 @@
 <body>
   <div class="app">
     <aside class="rail">
-      <div class="brand"><div class="brand-mark">O</div><div><strong>Orbit Agent</strong><small>Gemini browser workspace</small></div></div>
+      <div class="brand"><div class="brand-mark" aria-label="Orbit logo"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="13" fill="none" stroke="#60a5fa" stroke-width="3.5"/><path d="M9 25c6-13 18-15 24-7" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/><circle cx="31.5" cy="11.5" r="3" fill="#60a5fa"/></svg></div><div><strong>Orbit</strong><small>Personal AI browser</small></div></div>
       <nav class="rail-nav" aria-label="Main navigation">
         <button class="nav-item active" data-nav="chat"><span class="nav-icon">+</span><span>New conversation</span></button>
         <button class="nav-item" data-nav="memory"><span class="nav-icon">M</span><span>Memory vault</span></button>
@@ -213,7 +231,7 @@
       <section class="workspace">
         <section class="chat-column">
           <div class="hero"><div class="eyebrow">Personal web copilot</div><h2>Tell Orbit the outcome. It handles the steps.</h2><p>Orbit reads the page, chooses the next move, checks the result, and pauses only when your private input or approval is needed.</p><div class="hero-stats"><div class="stat"><b id="messageCount">0</b> messages</div><div class="stat"><b id="memoryCount">0</b> saved memories</div><div class="stat"><b>observe</b> + act loop</div></div></div>
-          <div class="mission-bar"><div class="mission-icon">O</div><div class="mission-copy"><b id="missionTitle">Ready for a mission</b><span id="missionDetail">Ask Orbit anything or give it a browser goal.</span></div><div class="mission-state" id="missionState">Idle</div></div>
+          <div class="mission-bar"><div class="mission-icon"><svg viewBox="0 0 40 40" width="19" height="19" aria-hidden="true"><circle cx="20" cy="20" r="12" fill="none" stroke="currentColor" stroke-width="3"/><path d="M10 25c6-12 17-14 23-7" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="30.5" cy="11.5" r="2.5" fill="currentColor"/></svg></div><div class="mission-copy"><b id="missionTitle">Ready for a mission</b><span id="missionDetail">Ask Orbit anything or give it a browser goal.</span></div><div class="mission-state" id="missionState">Idle</div></div>
           <div class="chat-card" id="chatCard">
             <div class="chat-head"><div><strong>Conversation</strong><br><span id="conversationLabel">New session</span></div><span id="modelLabel">gemini-3.5-flash</span></div>
             <div class="messages" id="messages"></div>
@@ -224,18 +242,19 @@
           <div class="browser-card">
             <div class="card-title"><div><strong>Remote browser</strong><br><span>Orbit's live viewport · take control when needed</span></div><span class="status-pill"><i class="dot ok"></i> Live</span></div>
             <div class="browser-toolbar"><div class="browser-nav"><button id="backButton" aria-label="Go back">‹</button><button id="forwardButton" aria-label="Go forward">›</button><button id="refreshButton" aria-label="Refresh">↻</button></div><input id="address" value="https://example.com" aria-label="Browser address"><button class="go-btn" id="goButton">Go</button></div>
+            <div class="tab-bar" id="tabBar"><button class="new-tab" id="newTabButton" aria-label="Open new tab">+</button></div>
             <div class="viewport" id="viewport"><div class="viewport-empty"><div><div class="empty-icon">[]</div><strong>Viewport ready</strong><p>Ask for a browser task or enter a URL above to open a live page.</p></div></div><iframe id="browserFrame" title="Live browser viewport" sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-presentation allow-same-origin allow-scripts"></iframe><img id="browserShot" alt="Live remote browser screenshot"></div>
             <div class="browser-foot"><i class="dot ok"></i><span id="browserStatus">Waiting for a browser task</span><button class="tiny-btn" id="takeControlButton" hidden>Take control</button></div>
             <div class="remote-controls" id="remoteControls" hidden><div class="remote-control-label"><span><b>Remote control on</b> · tap the viewport to click</span><span>private session</span></div><div class="remote-control-row"><input id="remoteText" type="text" placeholder="Type into the active field..."><button class="primary" id="remoteType">Type</button><button id="remoteEnter">Enter</button><button id="releaseControl">Release</button></div></div>
-            <div class="log" id="actionLog"><div class="log-line"><b>system</b><span>Browser stream initialized</span></div></div>
+             <div class="activity-head"><strong>Live activity</strong><span id="activityStatus">Idle</span></div><div class="log" id="actionLog"><div class="log-line"><b>system</b><span>Browser stream initialized</span></div></div>
           </div>
           <div class="memory-card" id="memorySection"><div class="card-title"><div><strong>Memory vault</strong><br><span>Private to this browser</span></div><button class="tiny-btn" id="forgetButton">Forget all</button></div><div class="memory-list" id="memoryList"></div></div>
         </section>
       </section>
     </main>
   </div>
-  <div class="modal-backdrop hidden" id="setupModal"><div class="modal"><div class="eyebrow">One-time setup</div><h3>Connect your free agent.</h3><p>One Gemini API key powers chat, vision, web search, and the remote Playwright browser. This free-tier version does not use Browser Use billing.</p><div class="field"><label for="apiKey">Gemini API key</label><input id="apiKey" type="password" placeholder="AIza..." autocomplete="off"></div><div class="field"><label for="modelInput">Model</label><input id="modelInput" value="gemini-3.5-flash" autocomplete="off"></div><div class="modal-note">Your key is stored only in this device's browser storage and sent over HTTPS to the app. Orbit will not submit forms, send messages, make purchases, or take irreversible actions unless you explicitly request it.</div><div class="modal-actions"><button class="outline-btn" id="cancelSetup">Not now</button><button class="primary-btn" id="saveSetup">Save and connect</button></div></div></div>
-  <div class="modal-backdrop hidden" id="handoffModal"><div class="modal handoff"><div class="handoff-badge">! USER INPUT NEEDED</div><h3 id="handoffTitle">Sign in on the remote browser.</h3><p id="handoffMessage">Orbit paused because this step needs your private input. Nothing is submitted until you continue.</p><div class="modal-note">Tap <b>Take control</b>, then tap fields in the live browser and type through the private control bar. Your password and one-time codes are never sent to Gemini.</div><div class="modal-actions"><button class="outline-btn" id="cancelHandoff">Stop task</button><button class="outline-btn" id="takeControlModal">Take control</button><button class="primary-btn" id="continueTask">Continue task</button></div></div></div>
+  <div class="modal-backdrop hidden" id="setupModal"><div class="modal"><div class="eyebrow">One-time setup</div><h3>Connect your free agent.</h3><p>One Gemini API key powers chat, vision, web search, and the remote Playwright browser. This free-tier version does not use Browser Use billing.</p><div class="field"><label for="apiKey">Gemini API key</label><input id="apiKey" type="password" placeholder="AIza..." autocomplete="off"></div><div class="field"><label for="modelInput">Model</label><input id="modelInput" value="gemini-3.5-flash" autocomplete="off"></div><div class="modal-note">Your key is stored only in this device's browser storage and sent over HTTPS to the app. The browser profile reuses sign-ins while the free cloud instance is alive. Orbit will not submit forms, send messages, make purchases, or take irreversible actions unless you explicitly request it.</div><div class="modal-actions"><button class="outline-btn" id="cancelSetup">Not now</button><button class="primary-btn" id="saveSetup">Save and connect</button></div></div></div>
+  <div class="modal-backdrop hidden" id="handoffModal"><div class="modal handoff"><div class="handoff-badge">! USER INPUT NEEDED</div><h3 id="handoffTitle">Sign in on the remote browser.</h3><p id="handoffMessage">Orbit paused because this step needs your private input. Nothing is submitted until you continue.</p><div class="modal-note">Tap <b>Take control</b>, then tap fields in the live browser and type through the private control bar. Your password and one-time codes are never sent to Gemini.</div><div class="modal-actions"><button class="outline-btn" id="cancelHandoff">Keep paused</button><button class="outline-btn" id="takeControlModal">Take control</button><button class="primary-btn" id="continueTask">Continue task</button></div></div></div>
   <div class="toast" id="toast"></div>
   <script>
     const MODEL_DEFAULT = 'gemini-3.5-flash';
@@ -247,6 +266,8 @@
       memories: 'orbit-memory-vault',
       address: 'orbit-browser-address'
     };
+    const profileId = localStorage.getItem('orbit-profile-id') || (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`);
+    localStorage.setItem('orbit-profile-id', profileId);
     const state = {
       mode: 'chat',
       image: null,
@@ -255,6 +276,8 @@
       memories: readJson(STORE.memories, []),
       model: localStorage.getItem(STORE.model) || MODEL_DEFAULT,
       browserSessionId: localStorage.getItem(STORE.browserSession) || '',
+      activeTabId: localStorage.getItem('orbit-active-tab') || '',
+      tabs: [],
       controlActive: false,
       waitingRun: null,
       waitingKind: 'login_required',
@@ -298,6 +321,13 @@
       }
       renderStats();
     }
+    function renderTabs(tabs) {
+      if (!Array.isArray(tabs)) return;
+      state.tabs = tabs; const active = tabs.find((tab) => tab.active); if (active) { state.activeTabId = active.id; localStorage.setItem('orbit-active-tab', active.id); }
+      $('tabBar').innerHTML = tabs.map((tab) => `<button class="tab ${tab.active ? 'active' : ''}" data-tab-id="${escapeHtml(tab.id)}"><span class="tab-title">${escapeHtml(tab.title || 'New tab')}</span><span class="tab-close" data-close-tab="${escapeHtml(tab.id)}" aria-label="Close tab">×</span></button>`).join('') + '<button class="new-tab" id="newTabButton" aria-label="Open new tab">+</button>';
+      $('tabBar').querySelectorAll('.tab').forEach((button) => button.addEventListener('click', (event) => { if (event.target.closest('[data-close-tab]')) sendRemoteInput('close_tab', { tabId: button.dataset.tabId }).catch((error) => showToast(error.message)); else sendRemoteInput('switch_tab', { tabId: button.dataset.tabId }).catch((error) => showToast(error.message)); }));
+      $('newTabButton').addEventListener('click', () => sendRemoteInput('new_tab').catch((error) => showToast(error.message)));
+    }
     function renderMessage(message) {
       const row = document.createElement('div'); row.className = `message ${message.role === 'user' ? 'user' : 'assistant'}`;
       const speaker = message.role === 'assistant' ? `<div class="message-meta"><span>${message.time || 'now'}</span><button class="speaker" data-speak="${escapeHtml(message.text)}" aria-label="Read response aloud">[ speaker ]</button></div>` : `<div class="message-meta"><span>${message.time || 'now'}</span></div>`;
@@ -319,7 +349,7 @@
     function setMission(title, detail, stateLabel = 'Idle') { $('missionTitle').textContent = title; $('missionDetail').textContent = detail; $('missionState').textContent = stateLabel; }
     function setBusy(isBusy, status) {
       state.busy = isBusy; $('sendButton').disabled = isBusy; $('liveStatus').textContent = status || (isBusy ? 'Thinking' : 'Ready');
-      $('liveDot').classList.toggle('ok', !isBusy); $('sendButton').textContent = isBusy ? '...' : '>'; if (isBusy) setMission(status || 'Working', 'Orbit is observing the page and choosing the next best step.', 'Active'); else if (status === 'Ready') setMission('Ready for a mission', 'Ask Orbit anything or give it a browser goal.', 'Idle');
+      $('liveDot').classList.toggle('ok', !isBusy); $('sendButton').textContent = isBusy ? '...' : '>'; if (isBusy) { setMission(status || 'Working', 'Orbit is observing the page and choosing the next best step.', 'Active'); $('activityStatus').textContent = 'Live'; } else if (status === 'Ready') { setMission('Ready for a mission', 'Ask Orbit anything or give it a browser goal.', 'Idle'); $('activityStatus').textContent = 'Idle'; }
     }
     function openSetup() {
       $('apiKey').value = apiKey(); $('modelInput').value = state.model; $('setupModal').classList.remove('hidden');
@@ -333,8 +363,13 @@
       $('prompt').placeholder = labels[mode];
     }
     function logAction(label, detail) {
-      const line = document.createElement('div'); line.className = 'log-line'; line.innerHTML = `<b>${escapeHtml(label)}</b><span>${escapeHtml(detail)}</span>`;
+      const normalized = String(label).toLowerCase().replace(/[^a-z]+/g, '-');
+      const line = document.createElement('div'); line.className = `log-line log-${normalized}`; line.innerHTML = `<b>${escapeHtml(label)}</b><span>${escapeHtml(detail)}</span>`;
       $('actionLog').appendChild(line); $('actionLog').scrollTop = $('actionLog').scrollHeight;
+      if (!['error', 'complete'].includes(normalized)) $('activityStatus').textContent = 'Live';
+    }
+    function eventLabel(type) {
+      return ({ status: 'status', observe: 'observe', thinking: 'think', acting: 'next', action: 'action', screenshot: 'screen', human_check: 'human', login_required: 'input', confirmation_required: 'approve', complete: 'complete', error: 'error' })[type] || 'event';
     }
     function safeUrl(value) {
       try {
@@ -348,14 +383,14 @@
     }
     async function ensureRemoteSession() {
       if (state.browserSessionId) return state.browserSessionId;
-      const response = await fetch('/api/browser/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey() }) });
+      const response = await fetch('/api/browser/session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), profileId }) });
       const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Could not start the remote browser.');
       state.browserSessionId = data.sessionId; localStorage.setItem(STORE.browserSession, state.browserSessionId); previewRemoteData(data); setControl(false); return state.browserSessionId;
     }
     async function sendRemoteInput(type, values = {}) {
       let sessionId = await ensureRemoteSession();
-      let response = await fetch(`/api/browser/${sessionId}/input`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), type, ...values }) });
-      if (response.status === 403) { localStorage.removeItem(STORE.browserSession); state.browserSessionId = ''; sessionId = await ensureRemoteSession(); response = await fetch(`/api/browser/${sessionId}/input`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), type, ...values }) }); }
+      let response = await fetch(`/api/browser/${sessionId}/input`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), profileId, type, tabId: values.tabId || state.activeTabId || null, ...values }) });
+      if (response.status === 403) { localStorage.removeItem(STORE.browserSession); state.browserSessionId = ''; sessionId = await ensureRemoteSession(); response = await fetch(`/api/browser/${sessionId}/input`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), profileId, type, tabId: values.tabId || state.activeTabId || null, ...values }) }); }
       const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Remote browser input failed.');
       previewRemoteData(data); return data;
     }
@@ -430,6 +465,8 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     }
     function previewRemoteData(data) {
       if (!data || typeof data !== 'object') return;
+      if (data.tabs) renderTabs(data.tabs);
+      if (data.activeTabId) { state.activeTabId = data.activeTabId; localStorage.setItem('orbit-active-tab', data.activeTabId); }
       if (data.url && data.url !== 'about:blank') { $('address').value = data.url; localStorage.setItem(STORE.address, data.url); }
       const possible = [data.screenshot, data.screenshotUrl, data.image, data.imageUrl, data.screenshot_url].find((value) => typeof value === 'string' && value.length > 20);
       if (!possible) { $('takeControlButton').hidden = !state.browserSessionId; return; }
@@ -442,11 +479,11 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       return data.message || data.text || data.description || data.action || data.url || event.type || 'Browser event received';
     }
     function showHandoff(runId, kind, message) {
-      state.waitingRun = runId; state.waitingKind = kind; state.waitingMessage = message || ''; $('handoffTitle').textContent = kind === 'confirmation_required' ? 'Confirm this browser action.' : 'Sign in on the remote browser.'; $('handoffMessage').textContent = message || (kind === 'confirmation_required' ? 'Orbit paused before a sensitive action.' : 'Orbit paused because private input is needed.'); $('handoffModal').classList.remove('hidden'); $('takeControlButton').hidden = false; setMission(kind === 'confirmation_required' ? 'Waiting for your approval' : 'Waiting for your sign-in', state.waitingMessage || 'Take control of the remote browser to continue.', 'Paused'); logAction('user', kind === 'confirmation_required' ? 'Waiting for confirmation' : 'Waiting for sign-in');
+      state.waitingRun = runId; state.waitingKind = kind; state.waitingMessage = message || ''; const human = kind === 'human_check'; $('handoffTitle').textContent = human ? 'Complete the human check.' : kind === 'confirmation_required' ? 'Confirm this browser action.' : 'Sign in on the remote browser.'; $('handoffMessage').textContent = message || (human ? 'Complete the website verification in the live browser, then continue.' : kind === 'confirmation_required' ? 'Orbit paused before a sensitive action.' : 'Orbit paused because private input is needed.'); $('handoffModal').classList.remove('hidden'); $('takeControlButton').hidden = false; setMission(human ? 'Human check needed' : kind === 'confirmation_required' ? 'Waiting for your approval' : 'Waiting for your sign-in', state.waitingMessage || 'Take control of the remote browser to continue.', 'Paused'); logAction('user', human ? 'Waiting for human verification' : kind === 'confirmation_required' ? 'Waiting for confirmation' : 'Waiting for sign-in');
     }
     async function resumeWaitingTask() {
       if (!state.waitingRun) return;
-      const response = await fetch(`/api/browser/${state.waitingRun}/resume`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey() }) });
+      const response = await fetch(`/api/browser/${state.waitingRun}/resume`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: apiKey(), profileId }) });
       const data = await response.json(); if (!response.ok) throw new Error(data.detail || 'Could not resume the browser task.');
       $('handoffModal').classList.add('hidden'); setControl(false); state.resumeWaiter?.(); state.resumeWaiter = null; logAction('user', 'Resuming the browser task');
     }
@@ -462,7 +499,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
         const eventResponse = await fetch(`${base}/events?limit=100&after=${after}&include_output=false&key=${encodeURIComponent(key)}`, { headers });
         if (eventResponse.ok) {
           const eventData = await eventResponse.json();
-          (eventData.events || []).forEach((event) => { after = Math.max(after, Number(event.id) || after); logAction('remote', eventDetail(event)); previewRemoteData(event.data); if (['login_required', 'confirmation_required'].includes(event.type)) showHandoff(runId, event.type, event.data?.message); });
+          (eventData.events || []).forEach((event) => { after = Math.max(after, Number(event.id) || after); const label = eventLabel(event.type); logAction(label, eventDetail(event)); if (event.type === 'thinking') $('activityStatus').textContent = 'Choosing'; if (event.type === 'acting') $('activityStatus').textContent = 'Acting'; if (event.type === 'screenshot') $('activityStatus').textContent = 'Updated'; if (event.type === 'complete') $('activityStatus').textContent = 'Done'; if (event.type === 'error') $('activityStatus').textContent = 'Error'; previewRemoteData(event.data); if (['login_required', 'confirmation_required', 'human_check'].includes(event.type)) { $('activityStatus').textContent = 'Paused'; showHandoff(runId, event.type, event.data?.message); } });
         }
         if (status.status === 'waiting_user') { await waitForUser(runId, state.waitingKind, state.waitingMessage || 'Use Take control to enter private information, then continue.'); continue; }
         if (['completed', 'failed', 'cancelled'].includes(status.status)) {
@@ -472,13 +509,13 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
           const answer = typeof result.result === 'string' && result.result ? result.result : result.output ? JSON.stringify(result.output, null, 2) : 'The remote browser completed the task.';
           return { answer, actions: [], memories: [], sources: [] };
         }
-        await new Promise((resolve) => setTimeout(resolve, 1600));
+         await new Promise((resolve) => setTimeout(resolve, 650));
       }
       throw new Error('The remote browser took too long to respond. You can try the task again.');
     }
     async function runRemoteBrowser(task) {
       const key = apiKey(); if (!key) throw new Error('Add a Gemini API key in Setup to control the free remote browser.');
-      const requestBody = { key, task, model: state.model, sessionId: state.browserSessionId || null };
+      const requestBody = { key, task, model: state.model, sessionId: state.browserSessionId || null, tabId: state.activeTabId || null, profileId };
       let response = await fetch('/api/browser/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) });
       if (response.status === 403 && state.browserSessionId) { localStorage.removeItem(STORE.browserSession); state.browserSessionId = ''; requestBody.sessionId = null; response = await fetch('/api/browser/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(requestBody) }); }
       const data = await response.json(); if (!response.ok) { const detail = typeof data.detail === 'string' ? data.detail : typeof data.detail?.detail === 'string' ? data.detail.detail : data.detail ? JSON.stringify(data.detail) : data.error; throw new Error(detail || `Browser Use rejected the task (${response.status}).`); }
@@ -529,6 +566,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
     document.querySelectorAll('.nav-item').forEach((button) => button.addEventListener('click', () => focusSection(button.dataset.nav)));
     $('goButton').addEventListener('click', () => openBrowser($('address').value)); $('address').addEventListener('keydown', (event) => { if (event.key === 'Enter') openBrowser(event.target.value); });
     $('backButton').addEventListener('click', async () => { try { await sendRemoteInput('back'); } catch (error) { showToast(error.message); } }); $('forwardButton').addEventListener('click', async () => { try { await sendRemoteInput('forward'); } catch (error) { showToast(error.message); } }); $('refreshButton').addEventListener('click', async () => { try { await sendRemoteInput('reload'); } catch (error) { showToast(error.message); } });
+    $('newTabButton').addEventListener('click', () => sendRemoteInput('new_tab').catch((error) => showToast(error.message)));
     $('browserShot').addEventListener('click', async (event) => { if (!state.controlActive) { showToast('Tap Take control before interacting'); return; } const rect = event.currentTarget.getBoundingClientRect(); try { await sendRemoteInput('click', { x: ((event.clientX - rect.left) / rect.width) * (event.currentTarget.naturalWidth || 1280), y: ((event.clientY - rect.top) / rect.height) * (event.currentTarget.naturalHeight || 900) }); logAction('you', 'Clicked the remote browser'); } catch (error) { showToast(error.message); } });
     $('takeControlButton').addEventListener('click', () => setControl(!state.controlActive)); $('takeControlModal').addEventListener('click', () => { $('handoffModal').classList.add('hidden'); setControl(true); }); $('continueTask').addEventListener('click', () => resumeWaitingTask().catch((error) => showToast(error.message))); $('cancelHandoff').addEventListener('click', () => { $('handoffModal').classList.add('hidden'); showToast('Task remains paused'); }); $('releaseControl').addEventListener('click', () => setControl(false));
     $('remoteType').addEventListener('click', async () => { const input = $('remoteText'); if (!input.value) return; try { await sendRemoteInput('type', { text: input.value }); logAction('you', 'Typed into the remote browser'); input.value = ''; } catch (error) { showToast(error.message); } }); $('remoteEnter').addEventListener('click', async () => { try { await sendRemoteInput('key', { keyName: 'Enter' }); } catch (error) { showToast(error.message); } }); $('remoteText').addEventListener('keydown', (event) => { if (event.key === 'Enter') $('remoteType').click(); });
