@@ -420,7 +420,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       if (firstRun) requestBody.browserSettings = { record: true, screenWidth: 1280, screenHeight: 900 };
       const direct = location.hostname.endsWith('.pages.bu.app');
       const response = await fetch(direct ? 'https://api.browser-use.com/api/v4/runs' : '/api/browser/run', { method: 'POST', headers: direct ? { 'X-Browser-Use-API-Key': key, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' }, body: JSON.stringify(direct ? requestBody : { key, task: requestBody.task, model: requestBody.model, sessionId: requestBody.sessionId }) });
-      const data = await response.json(); if (!response.ok) throw new Error(data.detail || data.error || `Browser Use rejected the task (${response.status}).`);
+      const data = await response.json(); if (!response.ok) { const detail = typeof data.detail === 'string' ? data.detail : data.detail ? JSON.stringify(data.detail) : data.error; throw new Error(detail || `Browser Use rejected the task (${response.status}).`); }
       state.browserSessionId = data.sessionId || state.browserSessionId; if (state.browserSessionId) localStorage.setItem(STORE.browserSession, state.browserSessionId);
       $('browserStatus').textContent = 'Remote browser is working'; logAction('remote', `Started real browser run ${data.id.slice(0, 8)}`); return pollRemoteRun(data.id);
     }
