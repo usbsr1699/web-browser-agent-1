@@ -399,7 +399,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
           const result = await resultResponse.json();
           if (status.status !== 'completed') throw new Error(result.error || `Remote browser run ${status.status}.`);
           const answer = typeof result.result === 'string' && result.result ? result.result : result.output ? JSON.stringify(result.output, null, 2) : 'The remote browser completed the task.';
-          return { answer };
+          return { answer, actions: [], memories: [], sources: [] };
         }
         await new Promise((resolve) => setTimeout(resolve, 1600));
       }
@@ -422,6 +422,7 @@ Return only valid JSON with this exact shape: {"answer":"short helpful answer wi
       logAction('agent', `Working on: ${text.slice(0, 70)}${text.length > 70 ? '...' : ''}`);
       try {
         const result = state.mode === 'browser' ? await runRemoteBrowser(text) : await callGemini(text);
+        result.actions = Array.isArray(result.actions) ? result.actions : []; result.memories = Array.isArray(result.memories) ? result.memories : []; result.sources = Array.isArray(result.sources) ? result.sources : [];
         pushMessage('assistant', result.answer);
         result.memories.forEach((memory) => addMemory(memory.label, memory.text));
         result.sources.slice(0, 5).forEach((source) => logAction('source', source.title || source.url));
